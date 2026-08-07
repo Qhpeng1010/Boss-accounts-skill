@@ -1,0 +1,44 @@
+html, body, #root { height: 100%; margin: 0; background: var(--boss-page-bg); }
+body { color: var(--boss-text); font: var(--boss-font-size)/22px var(--boss-font-family); }
+* { box-sizing: border-box; }
+.boss-shell { min-width: 1120px; height: 100vh; overflow: hidden; background: var(--boss-page-bg); }
+.boss-shell-topbar { height: 28px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; color: var(--boss-shell-muted); background: var(--boss-topbar); font-size: 12px; white-space: nowrap; }
+.boss-shell-topbar-left, .boss-shell-topbar-right { overflow: hidden; text-overflow: ellipsis; }
+.boss-shell-primary-nav { height: 64px; display: flex; align-items: center; justify-content: space-between; background: var(--boss-container); box-shadow: var(--boss-navigation-shadow); position: relative; z-index: 5; }
+.boss-shell-logo-zone { width: 208px; height: 64px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.boss-shell-logo { width: 128px; height: 40px; display: block; object-fit: contain; }
+.boss-shell-primary-items { height: 64px; display: flex; align-items: center; justify-content: flex-end; gap: 28px; flex: 1; min-width: 0; overflow: hidden; padding-right: 32px; }
+.boss-shell-primary-item { height: 64px; display: flex; align-items: center; color: var(--boss-secondary); position: relative; white-space: nowrap; cursor: pointer; }
+.boss-shell-primary-item.active { color: var(--boss-primary); }
+.boss-shell-primary-item.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--boss-primary); }
+.boss-shell-body { display: flex; height: calc(100vh - 92px); overflow: hidden; }
+.boss-shell-sider { width: 208px; flex: 0 0 208px; background: var(--boss-container); display: flex; flex-direction: column; border-right: 1px solid var(--boss-divider); transition: width .2s ease, flex-basis .2s ease; }
+.boss-shell-sider.collapsed { width: 48px; flex-basis: 48px; overflow: hidden; }
+.boss-shell-menu { flex: 1; width: 207px; padding-top: 4px; overflow: auto; }
+.boss-shell-menu .ant-menu { width: 207px !important; border-inline-end: 0 !important; font-weight: 400; }
+.boss-shell-sider.collapsed .boss-shell-menu, .boss-shell-sider.collapsed .boss-shell-menu .ant-menu, .boss-shell-sider.collapsed .ant-menu-inline-collapsed { width: 48px !important; }
+.boss-shell-sider.collapsed .ant-menu-submenu-arrow, .boss-shell-sider.collapsed .ant-menu-title-content { display: none !important; }
+.boss-shell-menu .ant-menu-item, .boss-shell-menu .ant-menu-submenu-title { width: 207px !important; height: 40px !important; line-height: 40px !important; margin: 0 !important; border-radius: 0 !important; font-weight: 400 !important; }
+.boss-shell-sider.collapsed .ant-menu-item, .boss-shell-sider.collapsed .ant-menu-submenu-title { width: 48px !important; padding-inline: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+.boss-shell-sider.collapsed .ant-menu-item-icon, .boss-shell-sider.collapsed .ant-menu-submenu-title .anticon { display: inline-flex !important; justify-content: center !important; margin-inline-end: 0 !important; min-width: 0 !important; }
+.boss-shell-menu .ant-menu-submenu-selected > .ant-menu-submenu-title, .boss-shell-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon { color: var(--boss-primary) !important; }
+.boss-shell-menu .ant-menu-item-selected { color: var(--boss-primary) !important; background: var(--boss-selected-bg) !important; }
+.boss-shell-menu .ant-menu-item-selected::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 2px; background: var(--boss-primary); }
+.boss-shell-collapse { height: 48px; flex: 0 0 48px; border-top: 1px solid var(--boss-sider-divider); display: flex; align-items: center; justify-content: flex-start; padding-left: 16px; color: var(--boss-tertiary); cursor: pointer; }
+.boss-shell-workspace { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--boss-page-bg); }
+.boss-shell-tabs { height: 48px; flex: 0 0 48px; padding: 4px 0 0 16px; overflow: hidden; }
+.boss-shell-tabs .ant-tabs, .boss-shell-tabs .ant-tabs-nav { height: 44px; }
+.boss-shell-tabs .ant-tabs-nav { margin: 0 !important; }
+.boss-shell-tabs .ant-tabs-nav::before { border-bottom: 0 !important; }
+.boss-shell-tabs .ant-tabs-tab { height: 44px; margin: 0 !important; padding: 0 12px !important; background: var(--boss-tab-inactive-bg) !important; border: 0 !important; border-radius: var(--boss-radius-control) var(--boss-radius-control) 0 0 !important; color: var(--boss-secondary); }
+.boss-shell-tabs .ant-tabs-tab-active { background: var(--boss-container) !important; border-radius: var(--boss-card-radius) var(--boss-card-radius) 0 0 !important; }
+.boss-shell-tabs .ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--boss-primary) !important; }
+.boss-shell-tabs .ant-tabs-ink-bar { display: none; }
+.boss-shell-tabs .ant-tabs-tab-remove { color: var(--boss-shell-muted) !important; margin-left: 4px !important; }
+.boss-shell-tab-label { display: inline-flex; align-items: center; max-width: 144px; }
+.boss-shell-tab-icon { color: var(--boss-shell-muted); font-size: 14px; flex: 0 0 auto; margin-inline-end: 8px; }
+.boss-shell-tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boss-shell-content { flex: 1; min-height: 0; overflow: auto; padding: 0 16px; background: var(--boss-page-bg); display: flex; flex-direction: column; }
+.boss-shell-content-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+.boss-shell-empty { flex: 1; min-height: 360px; display: flex; align-items: center; justify-content: center; background: var(--boss-container); border-radius: 0 var(--boss-card-radius) var(--boss-card-radius) var(--boss-card-radius); }
+.boss-shell-footer { height: 32px; min-height: 32px; max-height: 32px; margin: 12px 0 0; flex: 0 0 32px; position: static; display: flex; align-items: center; justify-content: center; color: var(--boss-footer); font-size: 12px; line-height: 20px; text-align: center; background: var(--boss-page-bg); border-top: 1px solid var(--boss-divider); }

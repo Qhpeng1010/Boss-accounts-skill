@@ -1,0 +1,223 @@
+/* Fixed business layout for declarative Boss Ledger Page Specs. */
+.boss-content-stack { flex: 1 1 auto; display: flex; flex-direction: column; gap: 16px; width: 100%; min-width: 0; max-width: 100%; min-height: 100%; }
+.boss-query-module, .boss-result-module, .boss-form-module, .boss-detail-module, .boss-result-page { background: var(--boss-container); }
+.boss-query-module { padding: 16px; }
+.boss-result-module { width: 100%; min-width: 0; max-width: 100%; padding: 0 16px 16px; min-height: 360px; overflow: hidden; }
+.boss-form-module, .boss-detail-module { flex: 1 0 auto; min-height: 480px; padding: 16px; border-radius: var(--boss-card-radius); overflow: hidden; }
+.boss-result-page { flex: 1 1 auto; min-height: 100%; padding: 48px 16px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border-radius: var(--boss-card-radius); overflow: hidden; }
+.boss-workflow-result { width: min(100%, 640px); padding: 0; }
+.boss-result-extra { display: flex; flex-direction: column; align-items: center; gap: 24px; margin-top: 32px; }
+.boss-result-actions { justify-content: center; }
+.boss-result-summary-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(100%, 640px); gap: 16px 48px; padding: 24px 40px; background: var(--boss-statistic-bg); border-radius: var(--boss-radius-control); text-align: left; box-sizing: border-box; }
+.boss-result-summary-item { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; min-width: 0; color: var(--boss-text); }
+.boss-result-summary-label { color: var(--boss-secondary); }
+.boss-result-summary-value { color: var(--boss-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.boss-result-feedback { width: min(100%, 540px); padding: 16px 24px; background: var(--boss-statistic-bg); border-radius: var(--boss-radius-control); box-sizing: border-box; }
+.boss-result-feedback-question { margin-bottom: 12px; color: var(--boss-text); font-weight: 500; }
+.boss-result-feedback-options { display: flex; justify-content: center; gap: 8px; }
+.boss-result-feedback-option { display: inline-flex; flex: 1 1 0; flex-direction: column; align-items: center; height: auto; min-width: 0; color: var(--boss-secondary); line-height: 1.5; white-space: normal; }
+.boss-result-feedback-option .anticon { margin: 0 0 4px; font-size: 24px; }
+.boss-result-feedback-option.is-selected { color: var(--boss-primary); }
+.boss-dashboard-page { min-height: 100%; }
+.boss-dashboard-scope { padding: 16px; background: var(--boss-container); }
+.boss-dashboard-scope-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 24px; align-items: start; --boss-dashboard-label-width: 76px; }
+.boss-dashboard-scope-grid .ant-form-item { margin-bottom: 0; }
+.boss-dashboard-scope-grid .ant-form-item-label { flex: 0 0 var(--boss-dashboard-label-width); max-width: var(--boss-dashboard-label-width); text-align: right; }
+.boss-dashboard-scope-grid .ant-form-item-label > label { width: 100%; justify-content: flex-end; }
+.boss-dashboard-scope-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.boss-dashboard-metrics { display: grid; grid-template-columns: repeat(var(--boss-dashboard-metric-columns, 4), minmax(0, 1fr)); gap: 16px; }
+.boss-dashboard-metric { min-width: 0; padding: 16px; background: var(--boss-container); border: 1px solid var(--boss-divider); border-radius: var(--boss-card-radius); }
+.boss-dashboard-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.boss-dashboard-chart { min-width: 0; min-height: 312px; padding: 16px; background: var(--boss-container); border-top: 2px solid var(--boss-divider); }
+.boss-dashboard-chart-title { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: var(--boss-text); }
+.boss-dashboard-scope-status { display: block; color: var(--boss-tertiary); font-size: 12px; }
+.boss-query-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: flex-start; column-gap: 24px; row-gap: 16px; width: 100%; }
+/* Keep query controls visible while their responsive row count is recalculated. */
+.boss-query-grid.is-measuring { visibility: visible; }
+.boss-query-field { min-width: 0; }
+.boss-query-field .ant-form-item { margin-bottom: 0; }
+.boss-query-field .ant-form-item-row { column-gap: 8px; flex-wrap: nowrap; }
+.boss-query-field .ant-form-item-label { flex: 0 0 auto; max-width: none; padding-inline-end: 0; text-align: right; }
+.boss-query-field .ant-form-item-label > label { width: auto; justify-content: flex-end; white-space: nowrap; }
+.boss-query-field .ant-form-item-control { flex: 1 1 auto; min-width: 0; }
+.boss-query-field .ant-input, .boss-query-field .ant-input-affix-wrapper, .boss-query-field .ant-select, .boss-query-field .ant-picker { width: 100%; }
+.boss-query-date-range-field { grid-column: 1 / -1; }
+.boss-query-date-range-control { display: flex; align-items: center; gap: 12px; width: fit-content; max-width: 100%; min-width: 0; }
+.boss-query-date-range-control > .boss-query-date-range-picker { flex: 0 1 auto; width: max-content; min-width: 320px; max-width: 100%; }
+.boss-query-date-presets { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; white-space: nowrap; }
+.boss-query-date-preset { padding-inline: 8px; color: var(--boss-secondary); }
+.boss-query-date-preset:hover, .boss-query-date-preset:focus-visible { color: var(--boss-primary-hover) !important; }
+.boss-query-date-preset.is-selected, .boss-query-date-preset.is-selected:hover, .boss-query-date-preset.is-selected:focus-visible { color: var(--boss-primary) !important; background: var(--boss-selected-bg) !important; }
+.boss-query-actions { display: flex; grid-column: 3; justify-self: end; justify-content: flex-end; align-items: flex-start; gap: 8px; min-height: 32px; }
+.boss-query-expand-button { color: var(--boss-text); }
+.boss-result-toolbar { min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.boss-result-toolbar-left, .boss-result-toolbar-right { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.boss-result-title { font-size: 16px; font-weight: 500; color: var(--boss-text); white-space: nowrap; }
+.boss-result-summary-inline { display: inline-flex; align-items: center; min-width: 0; color: var(--boss-text); white-space: nowrap; }
+.boss-result-summary-prefix { margin-right: 12px; color: var(--boss-text); }
+.boss-result-summary-inline-item { display: inline-flex; align-items: baseline; gap: 4px; min-width: 0; }
+.boss-result-summary-inline-label, .boss-result-summary-inline-suffix { color: var(--boss-text); }
+.boss-result-summary-inline-value { color: var(--boss-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+.boss-result-summary-inline-divider { padding-inline: 12px; color: var(--boss-border); }
+.boss-result-summary { padding-top: 16px; margin-bottom: 8px; display: grid; grid-template-columns: repeat(var(--boss-summary-columns, 3), minmax(0, 1fr)); gap: 12px; }
+.boss-statistic-card { background: var(--boss-statistic-bg); border-radius: var(--boss-radius-control); }
+.boss-statistic-card .ant-card-body { padding: 16px; }
+.boss-table-body { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.boss-table-body > .ant-table-wrapper { width: 100%; min-width: 0; max-width: 100%; }
+.boss-table-pagination { padding-top: 16px; display: flex; justify-content: flex-end; }
+.boss-column-settings { width: 240px; }
+.boss-column-settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.boss-column-settings-list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow: auto; }
+.boss-column-setting-row { display: flex; align-items: center; min-height: 28px; }
+.boss-column-drag-handle { width: 20px; color: var(--boss-secondary); cursor: grab; font-family: monospace; }
+.boss-batch-toolbar { min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 8px 0; color: var(--boss-secondary); }
+.boss-child-table { margin: 0 16px 12px 48px; }
+.boss-form-section + .boss-form-section, .boss-detail-section + .boss-detail-section { margin-top: 24px; }
+.boss-form-section-divider { margin: 0 0 16px !important; }
+.boss-form-section-divider.ant-divider-horizontal.ant-divider-with-text-left::before { width: 0; }
+.boss-form-section-card { border-color: var(--boss-divider); box-shadow: none; }
+.boss-form-section-card .ant-card-head { min-height: 48px; border-bottom-color: var(--boss-divider); }
+.boss-form-section-card .ant-card-head-title { padding: 12px 0; color: var(--boss-text); font-size: 15px; font-weight: 600; }
+.boss-form-section-card .ant-card-body { padding: 16px; }
+.boss-grouped-form-module { min-height: 100%; padding: 0; background: var(--boss-page-bg); }
+.boss-grouped-form-module .boss-form-section + .boss-form-section { margin-top: 16px; }
+.boss-grouped-form-module .boss-form-section-card { border: 0; border-radius: var(--boss-card-radius); box-shadow: none; background: var(--boss-container); }
+.boss-grouped-form-module .boss-form-section-card .ant-card-head { min-height: auto; padding: 20px 20px 0; border-bottom: 0; }
+.boss-grouped-form-module .boss-form-section-card .ant-card-head-title { padding: 0; font-size: 16px; }
+.boss-grouped-form-module .boss-form-section-card .ant-card-body { padding: 20px; }
+.boss-grouped-detail-module { min-height: 100%; padding: 16px 0; background: var(--boss-page-bg); }
+.boss-grouped-detail-module .boss-detail-section + .boss-detail-section { margin-top: 16px; }
+.boss-grouped-detail-module .boss-detail-section-card { border-color: var(--boss-divider); border-radius: var(--boss-card-radius); background: var(--boss-container); }
+.boss-grouped-detail-module .boss-detail-section-card .ant-card-head { min-height: 52px; padding: 0 24px; border-bottom-color: var(--boss-divider); }
+.boss-grouped-detail-module .boss-detail-section-card .ant-card-head-title { padding: 14px 0; color: var(--boss-text); font-size: 15px; font-weight: 600; }
+.boss-grouped-detail-module .boss-detail-section-card .ant-card-body { padding: 20px 24px; }
+.boss-section-title { margin-bottom: 16px; font-size: 15px; font-weight: 600; color: var(--boss-text); }
+.boss-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+.boss-form-grid .boss-form-span-2 { grid-column: span 2; }
+.boss-full-page-form .boss-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 16px; row-gap: 24px; }
+.boss-full-page-form .boss-form-grid .ant-form-item { margin-bottom: 0; }
+.boss-full-page-form .boss-form-grid .boss-form-span-2 { grid-column: span 2; }
+.boss-form-grid.boss-form-stack,
+.boss-full-page-form .boss-form-grid.boss-form-stack,
+.boss-drawer-form-fields.boss-form-grid.boss-form-stack,
+.wizard-field-grid.boss-form-stack { grid-template-columns: minmax(0, 640px); column-gap: 0; }
+.boss-form-grid.boss-form-stack .boss-form-span-2 { grid-column: span 1; }
+.boss-form-submit-error { margin-top: 16px; }
+.boss-form-actions { margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px; }
+.boss-inline-form-actions { width: min(100%, 640px); justify-content: flex-start; gap: 16px; }
+.boss-form-actions.is-sticky { position: sticky; bottom: 0; margin: 24px -16px -16px; padding: 12px 16px; background: var(--boss-container); border-top: 1px solid var(--boss-divider); z-index: 2; }
+.boss-drawer-form-fields .ant-form-item { margin-bottom: 16px; }
+.boss-drawer-form .ant-drawer-body { padding-inline: 24px; }
+.boss-horizontal-form { --boss-form-label-width: 136px; --boss-form-control-offset: var(--boss-form-label-width); }
+.boss-horizontal-form .ant-form-item-label { flex: 0 0 var(--boss-form-label-width); max-width: var(--boss-form-label-width); text-align: right; }
+.boss-horizontal-form .ant-form-item-label > label { width: 100%; justify-content: flex-end; }
+.boss-horizontal-form .boss-inline-form-actions { width: min(calc(100% - var(--boss-form-control-offset)), 640px); margin-left: var(--boss-form-control-offset); }
+.boss-guided-form-layout { display: grid; box-sizing: border-box; width: min(100%, 1200px); padding-inline: 16px; grid-template-columns: minmax(0, 640px) minmax(280px, 360px); justify-content: center; gap: clamp(48px, 8vw, 112px); align-items: center; margin: clamp(32px, 8vh, 96px) auto; }
+.boss-guided-form-main { min-width: 0; width: 100%; }
+.boss-form-side-guide { min-width: 0; color: var(--boss-secondary); line-height: 1.7; text-align: center; }
+.boss-form-side-guide-image { display: block; width: min(100%, 360px); height: auto; margin: 0 auto 20px; object-fit: contain; }
+.boss-form-side-guide-title { margin-bottom: 8px; color: var(--boss-text); font-size: 16px; font-weight: 600; }
+.boss-form-side-guide-text { max-width: 320px; margin: 0 auto; word-break: break-word; }
+.boss-full-page-form { min-height: 100%; padding-bottom: 64px; display: flex; flex-direction: column; }
+.boss-full-page-form > .ant-form { flex: 1 1 auto; min-height: 100%; display: flex; flex-direction: column; }
+.boss-full-page-form.boss-inline-action-page { padding-bottom: 16px; }
+.boss-full-page-action-bar {
+  position: fixed;
+  left: 208px;
+  right: 0;
+  bottom: 0;
+  height: 48px;
+  margin: 0;
+  padding: 8px 32px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: var(--boss-container);
+  border-top: 1px solid var(--boss-divider);
+  z-index: 12;
+}
+.boss-shell-sider.collapsed + .boss-shell-workspace .boss-full-page-action-bar { left: 48px; }
+.boss-form-steps { margin: 4px auto 24px; max-width: 760px; }
+.boss-wizard-page { min-height: calc(100vh - 188px); background: var(--boss-container); padding: 24px 32px 72px; border-radius: var(--boss-card-radius); overflow: hidden; }
+.wizard-content-frame { flex: 1 0 auto; min-height: 440px; display: flex; flex-direction: column; justify-content: center; }
+.boss-wizard-steps { width: 100%; margin: 8px auto 32px; }
+.wizard-body-grid { display: grid; grid-template-columns: minmax(0, 65%) minmax(0, 35%); gap: 16px; align-items: center; }
+.wizard-form-pane { min-width: 0; width: 100%; }
+.wizard-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.wizard-field-grid.boss-form-stack { row-gap: 16px; }
+.wizard-field-grid .ant-form-item { margin-bottom: 0; }
+.wizard-field-grid .ant-input,
+.wizard-field-grid .ant-input-number,
+.wizard-field-grid .ant-input-number-group-wrapper { width: 100%; }
+.wizard-guide-pane { min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; width: 100%; box-sizing: border-box; text-align: center; }
+.wizard-guide-image { display: block; width: 70%; min-width: 220px; max-width: 320px; height: auto; object-fit: contain; }
+.wizard-guide-title { margin-top: 12px; font-size: 16px; font-weight: 500; color: var(--boss-text); }
+.wizard-guide-text { max-width: 300px; margin-top: 8px; font-size: 14px; color: var(--boss-secondary); line-height: 1.7; word-break: break-word; }
+.wizard-action-bar { position: fixed; left: 208px; right: 0; bottom: 0; z-index: 12; height: 48px; display: flex; justify-content: flex-end; gap: 8px; padding: 8px 32px; background: var(--boss-container); border-top: 1px solid var(--boss-divider); }
+.boss-shell-sider.collapsed + .boss-shell-workspace .wizard-action-bar { left: 48px; }
+.boss-detail-metrics { display: grid; grid-template-columns: repeat(var(--boss-metric-columns, 3), minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.boss-detail-metric { padding: 16px; background: var(--boss-statistic-bg); border-radius: var(--boss-radius-control); }
+.boss-detail-with-anchors { display: grid; grid-template-columns: 176px minmax(0, 1fr); gap: 24px; }
+.boss-detail-anchors { position: sticky; top: 16px; align-self: start; display: flex; flex-direction: column; gap: 8px; padding-right: 16px; border-right: 1px solid var(--boss-divider); }
+.boss-detail-anchors a { color: var(--boss-secondary); line-height: 28px; text-decoration: none; }
+.boss-detail-anchors a:hover { color: var(--boss-primary); }
+.boss-detail-anchor-content { min-width: 0; }
+.boss-drawer-detail { padding: 0; }
+.boss-drawer-grouped-detail { min-width: 0; }
+.boss-drawer-grouped-detail .boss-detail-section + .boss-detail-section { margin-top: 28px; }
+.boss-drawer-grouped-detail .boss-section-title { margin-bottom: 16px; }
+.boss-drawer-grouped-detail .ant-table-wrapper { max-width: 100%; overflow-x: auto; }
+.boss-drawer-footer-actions { display: flex; justify-content: flex-end; }
+.boss-error-state { padding: 64px 16px; }
+.ant-modal-confirm .ant-modal-body { padding: 24px !important; }
+.boss-confirm-modal .boss-confirm-button,
+.boss-confirm-modal .boss-confirm-button:hover,
+.boss-confirm-modal .boss-confirm-button:focus,
+.boss-confirm-modal .boss-confirm-button:active { background: var(--boss-primary); border-color: var(--boss-primary); }
+.ant-modal .ant-modal-header { border-bottom: 1px solid var(--boss-divider); margin-bottom: 0; padding: 16px 24px; }
+.ant-modal .ant-modal-body { padding: 24px 24px 0; }
+.ant-modal .ant-modal-footer { margin-top: 0; padding: 10px 24px; border-top: 1px solid var(--boss-divider); }
+@media (max-width: 1080px) {
+  .boss-query-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .boss-query-actions { grid-column: 2; }
+  .boss-full-page-form .boss-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .boss-guided-form-layout { grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); gap: 32px; }
+  .boss-dashboard-scope-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .boss-dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+  .boss-form-grid, .boss-result-summary, .boss-detail-metrics, .wizard-body-grid, .wizard-field-grid, .boss-dashboard-scope-grid, .boss-dashboard-metrics, .boss-dashboard-charts { grid-template-columns: minmax(0, 1fr); }
+  .boss-query-grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: 16px; }
+  .boss-query-date-range-field, .boss-query-actions { grid-column: 1; }
+  .boss-query-actions { justify-self: start; }
+  .boss-query-field .ant-form-item-row { flex-direction: column; }
+  .boss-query-field .ant-form-item-label { align-self: flex-start; padding: 0; text-align: left; }
+  .boss-query-field .ant-form-item-label > label { justify-content: flex-start; }
+  .boss-query-date-range-control { align-items: stretch; flex-direction: column; width: 100%; }
+  .boss-query-date-range-control > .boss-query-date-range-picker { width: 100%; min-width: 0; }
+  .boss-query-date-presets { align-self: flex-start; flex-wrap: wrap; }
+  .boss-query-actions { padding-bottom: 0; }
+  .boss-form-grid .boss-form-span-2 { grid-column: span 1; }
+  .boss-grouped-form-module .boss-form-section-card .ant-card-head-title { font-size: 15px; }
+  .boss-grouped-detail-module { padding: 12px 0; }
+  .boss-grouped-detail-module .boss-detail-section-card .ant-card-head { min-height: 48px; padding: 0 16px; }
+  .boss-grouped-detail-module .boss-detail-section-card .ant-card-head-title { padding: 12px 0; }
+  .boss-grouped-detail-module .boss-detail-section-card .ant-card-body { padding: 16px; }
+  .boss-result-toolbar { align-items: flex-start; flex-direction: column; }
+  .boss-result-toolbar-right { width: 100%; flex-wrap: wrap; }
+  .boss-guided-form-layout, .boss-detail-with-anchors { grid-template-columns: minmax(0, 1fr); }
+  .boss-form-side-guide { display: none; }
+  .boss-inline-form-actions { width: 100%; }
+  .boss-result-summary-panel { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .boss-result-feedback { padding: 16px; }
+  .boss-result-feedback-options { flex-wrap: wrap; }
+  .boss-result-feedback-option { flex-basis: 72px; }
+  .boss-detail-anchors { position: static; flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--boss-divider); padding: 0 0 8px; }
+  .boss-child-table { margin-left: 0; }
+  .boss-dashboard-scope-grid .ant-form-item { margin-bottom: 16px; }
+  .boss-dashboard-scope-actions { justify-content: flex-end; }
+  .boss-horizontal-form .ant-form-item-row { flex-direction: column; }
+  .boss-horizontal-form .ant-form-item-label { flex: 0 0 auto; max-width: none; padding: 0; text-align: left; }
+  .boss-horizontal-form .ant-form-item-label > label { justify-content: flex-start; }
+  .boss-horizontal-form .ant-form-item-control { width: 100%; }
+}

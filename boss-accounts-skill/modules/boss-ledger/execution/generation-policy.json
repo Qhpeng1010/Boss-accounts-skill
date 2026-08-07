@@ -1,0 +1,315 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "2026.08.06.20",
+  "system": "boss-ledger",
+  "allowedModes": ["shadow", "page-spec-default", "page-spec-only"],
+  "families": [
+    {
+      "id": "list",
+      "intents": ["query-list", "inline-summary-list", "card-summary-list"],
+      "availability": "available",
+      "mode": "page-spec-default",
+      "intentModes": {
+        "query-list": "page-spec-default",
+        "inline-summary-list": "page-spec-default",
+        "card-summary-list": "page-spec-default"
+      },
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-010", "BL-TPL-013", "BL-INT-003", "BL-INT-004", "BL-INT-008", "BL-INT-010"],
+      "capabilities": [
+        "query.basic",
+        "query.advanced",
+        "summary.inline",
+        "statistics.cards",
+        "table.flat",
+        "table.pagination",
+        "table.status",
+        "table.amount",
+        "table.refresh",
+        "table.columnSettings",
+        "table.confirmAction",
+        "table.deleteAction",
+        "detail.drawer",
+        "detail.drawerTable",
+        "table.editAction",
+        "table.batchAction",
+        "table.expandable",
+        "table.export",
+        "table.columnOrder",
+        "list.drawerCreate"
+      ]
+    },
+    {
+      "id": "form",
+      "intents": ["modal-form", "simple-page-form", "full-page-form", "guided-form", "wizard"],
+      "availability": "available",
+      "mode": "shadow",
+      "intentModes": {
+        "simple-page-form": "shadow"
+      },
+      "ruleRefs": ["BL-TPL-005", "BL-TPL-006", "BL-TPL-007", "BL-TPL-021", "BL-VIS-021", "BL-INT-005", "BL-INT-006", "BL-INT-007", "BL-INT-017"],
+      "capabilities": [
+        "form.simple",
+        "form.groups",
+        "form.steps",
+        "form.stickyActions",
+        "form.review",
+        "form.sideGuide",
+        "form.upload",
+        "form.reviewTable",
+        "form.returnSource",
+        "form.resultSummary",
+        "form.resultFeedback",
+        "form.sourceList",
+        "query.basic",
+        "query.advanced",
+        "table.flat",
+        "table.pagination",
+        "table.status",
+        "table.amount",
+        "table.refresh",
+        "table.columnSettings",
+        "table.confirmAction",
+        "table.deleteAction",
+        "detail.drawer",
+        "detail.drawerTable",
+        "table.editAction",
+        "table.batchAction",
+        "table.expandable",
+        "table.export",
+        "table.columnOrder"
+      ]
+    },
+    {
+      "id": "detail",
+      "intents": ["detail"],
+      "availability": "available",
+      "mode": "shadow",
+      "ruleRefs": ["BL-TPL-009", "BL-TPL-013", "BL-INT-004"],
+      "capabilities": [
+        "detail.groups",
+        "detail.metrics",
+        "detail.embeddedTable",
+        "detail.modal",
+        "detail.drawer",
+        "detail.anchors",
+        "detail.tabs"
+      ]
+    },
+    {
+      "id": "result",
+      "intents": ["result"],
+      "availability": "workflow-only",
+      "mode": "page-spec-only",
+      "ruleRefs": ["BL-TPL-003", "BL-TPL-017", "BL-TPL-021", "BL-VIS-021", "BL-INT-006", "BL-INT-017"],
+      "capabilities": ["result.basic", "result.summary", "result.feedback"]
+    },
+    {
+      "id": "dashboard",
+      "intents": ["dashboard"],
+      "availability": "available",
+      "mode": "page-spec-default",
+      "ruleRefs": ["BL-TPL-002", "BL-TPL-017", "BL-TPL-020", "BL-INT-001", "BL-INT-015"],
+      "capabilities": [
+        "dashboard.scope",
+        "dashboard.metrics",
+        "dashboard.distribution",
+        "dashboard.trend",
+        "dashboard.ranking"
+      ]
+    },
+    {
+      "id": "empty-state",
+      "intents": ["empty-state"],
+      "availability": "pending",
+      "mode": "page-spec-only",
+      "ruleRefs": ["BL-TPL-004", "BL-TPL-017", "BL-INT-008"],
+      "capabilities": []
+    }
+  ],
+  "validatedCombinations": [
+    {
+      "id": "list.regular",
+      "family": "list",
+      "templateIds": ["list.regular"],
+      "evidence": "manual-business",
+      "capabilities": ["query.basic", "table.flat", "table.pagination"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-010"]
+    },
+    {
+      "id": "list.column-settings",
+      "family": "list",
+      "templateIds": ["list.regular"],
+      "evidence": "manual-business",
+      "capabilities": ["query.basic", "table.flat", "table.pagination", "table.columnSettings"],
+      "ruleRefs": ["BL-TPL-016"]
+    },
+    {
+      "id": "list.drawer-detail",
+      "family": "list",
+      "templateIds": ["list.regular"],
+      "evidence": "manual-business",
+      "capabilities": ["query.basic", "table.flat", "table.pagination", "detail.drawer"],
+      "ruleRefs": ["BL-TPL-013", "BL-INT-004"]
+    },
+    {
+      "id": "list.drawer-create",
+      "family": "list",
+      "templateIds": ["list.regular"],
+      "evidence": "manual-business",
+      "capabilities": ["query.basic", "table.flat", "table.pagination", "list.drawerCreate"],
+      "ruleRefs": ["BL-TPL-005", "BL-TPL-012", "BL-INT-004"]
+    },
+    {
+      "id": "list.workbench-drawer-crud",
+      "family": "list",
+      "templateIds": ["list.regular"],
+      "evidence": "manual-business",
+      "capabilities": ["query.basic", "query.advanced", "table.flat", "table.pagination", "table.status", "table.amount", "detail.drawer", "list.drawerCreate", "table.editAction", "table.confirmAction", "table.deleteAction"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-012", "BL-TPL-013", "BL-INT-002", "BL-INT-004", "BL-INT-010"]
+    },
+    {
+      "id": "list.card-statistics",
+      "family": "list",
+      "templateIds": ["list.card-summary"],
+      "evidence": "manual-business",
+      "capabilities": ["query.basic", "table.flat", "table.pagination", "table.status", "table.amount", "statistics.cards"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-011", "BL-INT-001"]
+    },
+    {
+      "id": "form.grouped",
+      "family": "form",
+      "templateIds": ["form.grouped-page"],
+      "evidence": "manual-business",
+      "capabilities": ["form.groups", "form.stickyActions"],
+      "ruleRefs": ["BL-TPL-007", "BL-TPL-008"]
+    },
+    {
+      "id": "form.modal-simple",
+      "family": "form",
+      "templateIds": ["form.modal-simple"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple"],
+      "ruleRefs": ["BL-TPL-005", "BL-INT-005"]
+    },
+    {
+      "id": "form.page-simple",
+      "family": "form",
+      "templateIds": ["form.page-simple"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple"],
+      "ruleRefs": ["BL-TPL-005", "BL-TPL-019", "BL-INT-005", "BL-INT-006", "BL-INT-016"]
+    },
+    {
+      "id": "form.guided-simple",
+      "family": "form",
+      "templateIds": ["form.guided-simple"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.sideGuide"],
+      "ruleRefs": ["BL-TPL-006", "BL-TPL-008", "BL-VIS-020", "BL-INT-016"]
+    },
+    {
+      "id": "form.steps",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.steps", "form.review", "form.stickyActions"],
+      "ruleRefs": ["BL-TPL-007", "BL-INT-007"]
+    },
+    {
+      "id": "form.steps-return-source",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.steps", "form.review", "form.stickyActions", "form.returnSource"],
+      "ruleRefs": ["BL-TPL-007", "BL-INT-006", "BL-INT-007"]
+    },
+    {
+      "id": "form.steps-source-list-basic",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.sideGuide", "form.upload", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.resultFeedback", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-006", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-007", "BL-INT-010", "BL-INT-017"]
+    },
+    {
+      "id": "form.steps-source-list-advanced",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.sideGuide", "form.upload", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.resultFeedback", "form.sourceList", "query.advanced", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-006", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-007", "BL-INT-010", "BL-INT-017"]
+    },
+    {
+      "id": "form.page-source-list-basic",
+      "family": "form",
+      "templateIds": ["form.page-simple"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.returnSource", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-005", "BL-TPL-006", "BL-TPL-012", "BL-TPL-013", "BL-TPL-019", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-017"]
+    },
+    {
+      "id": "form.page-source-list-advanced",
+      "family": "form",
+      "templateIds": ["form.page-simple"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.returnSource", "form.sourceList", "query.advanced", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-005", "BL-TPL-006", "BL-TPL-012", "BL-TPL-013", "BL-TPL-019", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-017"]
+    },
+    {
+      "id": "form.upload-review",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.steps", "form.review", "form.stickyActions", "form.upload", "form.reviewTable", "form.resultSummary", "form.resultFeedback"],
+      "ruleRefs": ["BL-TPL-006", "BL-TPL-007", "BL-TPL-021", "BL-VIS-021", "BL-INT-005", "BL-INT-006", "BL-INT-017"]
+    },
+    {
+      "id": "detail.grouped",
+      "family": "detail",
+      "templateIds": ["detail.record"],
+      "evidence": "manual-business",
+      "capabilities": ["detail.groups", "detail.metrics", "detail.embeddedTable"],
+      "ruleRefs": ["BL-TPL-009", "BL-VIS-014"]
+    },
+    {
+      "id": "detail.grouped-basic",
+      "family": "detail",
+      "templateIds": ["detail.record"],
+      "evidence": "manual-business",
+      "capabilities": ["detail.groups"],
+      "ruleRefs": ["BL-TPL-009", "BL-VIS-014"]
+    },
+    {
+      "id": "detail.modal-quick",
+      "family": "detail",
+      "templateIds": ["detail.record"],
+      "evidence": "manual-business",
+      "capabilities": ["detail.groups", "detail.modal"],
+      "ruleRefs": ["BL-TPL-009"]
+    },
+    {
+      "id": "detail.drawer-grouped-table",
+      "family": "detail",
+      "templateIds": ["detail.record"],
+      "evidence": "manual-business",
+      "capabilities": ["detail.groups", "detail.embeddedTable", "detail.drawer"],
+      "ruleRefs": ["BL-TPL-009", "BL-TPL-013"]
+    },
+    {
+      "id": "detail.page-anchors",
+      "family": "detail",
+      "templateIds": ["detail.record"],
+      "evidence": "manual-business",
+      "capabilities": ["detail.groups", "detail.anchors"],
+      "ruleRefs": ["BL-TPL-009", "BL-VIS-014"]
+    },
+    {
+      "id": "detail.tabs-metrics",
+      "family": "detail",
+      "templateIds": ["detail.record"],
+      "evidence": "manual-business",
+      "capabilities": ["detail.groups", "detail.metrics", "detail.embeddedTable", "detail.tabs"],
+      "ruleRefs": ["BL-TPL-009", "BL-VIS-014"]
+    }
+  ]
+}

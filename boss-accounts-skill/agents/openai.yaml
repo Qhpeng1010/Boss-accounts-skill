@@ -1,0 +1,4 @@
+interface:
+  display_name: "Boss-accounts-skill"
+  short_description: "生成、构建和校验老板管账业务页面的独立技能"
+  default_prompt: "Use $boss-accounts-skill to generate a Boss Ledger business page."

@@ -1,0 +1,72 @@
+{
+  "modules/boss-ledger/director-rules/README.md": {
+    "signature": "1786104334273.1653:4214",
+    "lines": 62,
+    "hash": "4684b5774c887d10"
+  },
+  "modules/boss-ledger/director-rules/01-visual-constitution.md": {
+    "signature": "1786104334273.5354:16069",
+    "lines": 113,
+    "hash": "a19091e8f3aff338"
+  },
+  "modules/boss-ledger/director-rules/02-template-application-rules.md": {
+    "signature": "1786104334272.3538:14254",
+    "lines": 84,
+    "hash": "c2b76aa437f10e62"
+  },
+  "modules/boss-ledger/director-rules/03-interaction-acceptance-rules.md": {
+    "signature": "1786104334272.7583:13373",
+    "lines": 81,
+    "hash": "c46f319bd29b8bc2"
+  },
+  "modules/boss-ledger/execution/rule-template-registry.json": {
+    "signature": "1786104334288.3643:6208",
+    "lines": 232,
+    "hash": "61dcd8b4af5e1cb7"
+  },
+  "modules/boss-ledger/execution/generation-policy.json": {
+    "signature": "1786104334288.0625:12644",
+    "lines": 315,
+    "hash": "460f6d5d1c657b7a"
+  },
+  "modules/boss-ledger/execution/theme/theme-tokens.json": {
+    "signature": "1786104334283.0435:1533",
+    "lines": 44,
+    "hash": "56f22171f0bc16e8"
+  },
+  "modules/boss-ledger/execution/context-packs/core.md": {
+    "signature": "1786104334282.4846:8009",
+    "lines": 31,
+    "hash": "c7b4cbe586333254"
+  },
+  "modules/boss-ledger/execution/context-packs/index.md": {
+    "signature": "1786104334282.2131:2996",
+    "lines": 26,
+    "hash": "399be75bffad1a19"
+  },
+  "modules/boss-ledger/execution/context-packs/list.md": {
+    "signature": "1786104334282.0518:20338",
+    "lines": 57,
+    "hash": "2f533463f8334d48"
+  },
+  "modules/boss-ledger/business-rules.md": {
+    "signature": "1786104334277.2085:10743",
+    "lines": 357,
+    "hash": "813eb0195858184d"
+  },
+  "modules/boss-ledger/execution/context-packs/form.md": {
+    "signature": "1786104334281.5115:29190",
+    "lines": 96,
+    "hash": "611b1dfbc78030f7"
+  },
+  "modules/boss-ledger/execution/context-packs/detail.md": {
+    "signature": "1786104334280.1401:3269",
+    "lines": 23,
+    "hash": "8555c261a39de9be"
+  },
+  "modules/boss-ledger/execution/context-packs/dashboard.md": {
+    "signature": "1786104334280.7607:1779",
+    "lines": 21,
+    "hash": "904ea9319abd0c46"
+  }
+}

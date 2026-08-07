@@ -1,0 +1,32 @@
+{
+  "expectedError": "Inline summary and statistics cards cannot be combined.",
+  "spec": {
+    "schemaVersion": 1,
+    "metadata": {
+      "changeId": "20260728-invalid-list-fixture",
+      "pageName": "非法统计列表",
+      "family": "list",
+      "templateId": "list.card-summary",
+      "ruleRefs": ["BL-TPL-011"]
+    },
+    "ui": { "system": "boss-ledger", "runtime": "react-antd-page-spec", "rendererVersion": 1 },
+    "content": { "capabilities": ["query.basic", "summary.inline", "statistics.cards", "table.flat", "table.pagination"] },
+    "list": {
+      "query": { "fields": [] },
+      "summary": { "items": [{ "key": "count", "label": "数量", "value": 3 }] },
+      "statistics": {
+        "items": [
+          { "key": "a", "label": "A", "value": 1 },
+          { "key": "b", "label": "B", "value": 2 },
+          { "key": "c", "label": "C", "value": 3 }
+        ]
+      },
+      "table": {
+        "rowKey": "id",
+        "columns": [{ "key": "id", "label": "编号" }],
+        "rows": [{ "id": "1" }],
+        "pagination": { "page": 1, "pageSize": 10, "total": 1 }
+      }
+    }
+  }
+}

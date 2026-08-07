@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "module": "boss-ledger",
+  "implementationMode": "markdown-spec-shell",
+  "adapter": {
+    "execution": {
+      "policy": "modules/boss-ledger/execution/generation-policy.json",
+      "templateRegistry": "modules/boss-ledger/execution/rule-template-registry.json",
+      "theme": {
+        "tokens": "modules/boss-ledger/execution/theme/theme-tokens.json",
+        "css": "modules/boss-ledger/execution/theme/theme.css",
+        "runtime": "modules/boss-ledger/execution/theme/theme.js"
+      },
+      "contextIndex": "modules/boss-ledger/execution/context-packs/index.md",
+      "schema": "modules/boss-ledger/execution/page-spec.schema.json",
+      "releaseManifest": "modules/boss-ledger/execution/release-manifest.json",
+      "coreContext": "modules/boss-ledger/execution/context-packs/core.md",
+      "familyContexts": {
+        "list": "modules/boss-ledger/execution/context-packs/list.md",
+        "form": "modules/boss-ledger/execution/context-packs/form.md",
+        "detail": "modules/boss-ledger/execution/context-packs/detail.md",
+        "result": "modules/boss-ledger/execution/context-packs/result.md",
+        "dashboard": "modules/boss-ledger/execution/context-packs/dashboard.md",
+        "empty-state": "modules/boss-ledger/execution/context-packs/state.md"
+      },
+      "scaffoldCommand": "node scripts/scaffold-boss-ledger-page-spec.mjs changes/{change-id}",
+      "checkCommand": "node scripts/check-boss-ledger-page-spec.mjs changes/{change-id}/page-spec.json --flexible",
+      "buildCommand": "node scripts/build-boss-ledger-page-spec.mjs changes/{change-id}/page-spec.json --flexible",
+      "verifyCommand": "node scripts/verify-boss-ledger-page-spec.mjs changes/{change-id}/page-spec.json --flexible"
+    },
+    "resources": {
+      "requirement": ["modules/shared/product.md", "modules/boss-ledger/business-rules.md"],
+      "design": ["modules/boss-ledger/director-rules/01-visual-constitution.md"],
+      "template": ["modules/boss-ledger/director-rules/02-template-application-rules.md", "modules/boss-ledger/director-rules/03-interaction-acceptance-rules.md", "modules/boss-ledger/execution/context-packs/index.md"],
+      "generate": [],
+      "review": ["modules/boss-ledger/business-rules.md"]
+    },
+    "commands": {
+      "generate": {
+        "prepare": "node scripts/prepare-boss-ledger-page-spec.mjs changes/{change-id} {template} --flexible",
+        "preflight": "node scripts/read-boss-ledger-rules.mjs changes/{change-id} {template}",
+        "coverage": "node scripts/check-page-requirement-coverage.mjs --system boss-ledger --spec changes/{change-id}/page-spec.json"
+      }
+    }
+  },
+  "intents": [
+    {"id":"query-list","pageType":"query-list","executionFamily":"list","signals":["查询列表","审核列表","配置列表","查询","列表","记录","台账"],"templateId":"list.regular"},
+    {"id":"inline-summary-list","pageType":"query-list-inline-summary","executionFamily":"list","signals":["轻量汇总","行内统计","不超过3个指标","2个指标","3个指标"],"templateId":"list.inline-summary"},
+    {"id":"card-summary-list","pageType":"query-list-card-summary","executionFamily":"list","signals":["页面顶部展示四项统计","顶部展示四项统计","卡片汇总","超过3个指标","多指标统计"],"templateId":"list.card-summary"},
+    {"id":"dashboard","pageType":"dashboard","executionFamily":"dashboard","signals":["dashboard","仪表盘","数据首页","经营概览","数据大盘"],"templateId":"dashboard.overview"},
+    {"id":"modal-form","pageType":"modal-form","executionFamily":"form","signals":["modal","弹窗表单","弹窗新增","弹窗编辑"],"templateId":"form.modal-simple"},
+    {"id":"simple-page-form","pageType":"simple-page-form","executionFamily":"form","signals":["独立表单","独立表单页","独立页面","基础表单页","登记页","登记页面","表单"],"templateId":"form.page-simple"},
+    {"id":"full-page-form","pageType":"full-page-form","executionFamily":"form","signals":["分组表单","分组配置","多组信息","全页分组表单"],"templateId":"form.grouped-page"},
+    {"id":"guided-form","pageType":"guided-form","executionFamily":"form","signals":["右侧说明","操作提示","说明表单","引导表单"],"templateId":"form.guided-simple"},
+    {"id":"detail","pageType":"detail","executionFamily":"detail","signals":["详情页","抽屉详情","详情"],"templateId":"detail.record"},
+    {"id":"wizard","pageType":"wizard","executionFamily":"form","signals":["wizard","步骤页","分步流程","步骤条","分为3步","分为三步","3步流程","三步流程","第一步","第二步","第三步","上一步","下一步","预览确认","确认提交"],"templateId":"form.staged-flow"},
+    {"id":"result","pageType":"result","executionFamily":"result","signals":["result","结果页","成功页","失败页"],"templateId":"result.workflow"},
+    {"id":"empty-state","pageType":"empty-state","executionFamily":"empty-state","signals":["empty state","空状态","空页"],"templateId":"state.embedded"}
+  ]
+}

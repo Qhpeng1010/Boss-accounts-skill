@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "changeId": "20260728-grouped-detail-fixture",
+    "pageName": "结算账户详情",
+    "family": "detail",
+    "templateId": "detail.record",
+    "executionMode": "shadow",
+    "validatedCombinations": ["detail.grouped"],
+    "request": "查看结算账户的基础信息、余额指标和近期资金流水。",
+    "selectionReason": "只读查看账户和结算配置。",
+    "assumptions": ["预览数据为只读样例，不代表真实账户余额或流水。"],
+    "ruleRefs": ["BL-VIS-014", "BL-TPL-009", "BL-INT-004"]
+  },
+  "ui": { "system": "boss-ledger", "runtime": "react-antd-page-spec", "rendererVersion": 1 },
+  "content": { "capabilities": ["detail.groups", "detail.metrics", "detail.embeddedTable"] },
+  "detail": {
+    "presentation": "page",
+    "metrics": [
+      { "key": "balance", "label": "账户余额", "value": 286540, "unit": "元", "precision": 2 },
+      { "key": "available", "label": "可用余额", "value": 265400, "unit": "元", "precision": 2 },
+      { "key": "frozen", "label": "冻结金额", "value": 21140, "unit": "元", "precision": 2 }
+    ],
+    "groups": [
+      {
+        "key": "basic",
+        "title": "基本信息",
+        "fields": [
+          { "key": "accountName", "label": "账户名称", "value": "杭州星云结算账户", "span": 2 },
+          { "key": "status", "label": "账户状态", "value": "正常", "format": "status", "status": "success" }
+        ]
+      },
+      {
+        "key": "flow",
+        "title": "资金流水",
+        "table": {
+          "rowKey": "flowNo",
+          "columns": [
+            { "key": "flowNo", "label": "流水号" },
+            { "key": "createdAt", "label": "发生时间" },
+            { "key": "amount", "label": "金额" },
+            { "key": "status", "label": "状态" }
+          ],
+          "rows": [
+            { "flowNo": "LS001", "createdAt": "2026-07-16 10:12:05", "amount": "120000.00 元", "status": "入账成功" }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "changeId": "20260728-grouped-form-fixture",
+    "pageName": "商户结算配置",
+    "family": "form",
+    "templateId": "form.grouped-page",
+    "executionMode": "shadow",
+    "validatedCombinations": ["form.grouped"],
+    "request": "为商户维护按主体、账户和结算周期分组的结算配置。",
+    "selectionReason": "多字段按三个业务分组核对。",
+    "assumptions": ["预览只验证客户端表单校验与成功反馈，不写入真实商户配置。"],
+    "ruleRefs": ["BL-TPL-005", "BL-TPL-007", "BL-TPL-008", "BL-INT-005", "BL-INT-006"]
+  },
+  "ui": { "system": "boss-ledger", "runtime": "react-antd-page-spec", "rendererVersion": 1 },
+  "content": { "capabilities": ["form.groups", "form.stickyActions"] },
+  "form": {
+    "presentation": "page",
+    "stickyActions": true,
+    "groups": [
+      {
+        "key": "merchant",
+        "title": "商户基本信息",
+        "fields": [
+          { "key": "merchantNo", "label": "商户编号", "control": "input", "required": true },
+          { "key": "merchantName", "label": "商户名称", "control": "input", "required": true }
+        ]
+      },
+      {
+        "key": "account",
+        "title": "收款账户",
+        "fields": [
+          { "key": "accountName", "label": "账户名称", "control": "input", "required": true },
+          { "key": "bankAccount", "label": "银行账号", "control": "input", "required": true, "pattern": "^[0-9]{10,19}$", "patternMessage": "请输入 10 至 19 位数字" }
+        ]
+      },
+      {
+        "key": "settlement",
+        "title": "结算周期",
+        "fields": [
+          {
+            "key": "cycle",
+            "label": "结算周期",
+            "control": "select",
+            "required": true,
+            "options": [{ "label": "T+1", "value": "t1" }, { "label": "D+1", "value": "d1" }]
+          }
+        ]
+      }
+    ],
+    "submit": {
+      "primaryLabel": "保 存",
+      "cancelLabel": "取 消",
+      "success": { "title": "保存成功", "message": "商户结算配置已保存。", "actionLabel": "返回配置" }
+    }
+  }
+}

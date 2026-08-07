@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yeepay.local/schemas/boss-ledger-page-spec-v1.json",
+  "title": "Boss Ledger Page Spec",
+  "type": "object",
+  "$defs": {
+    "navigationItem": {
+      "type": "object",
+      "required": ["key", "label"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "route": { "type": "string" },
+        "closable": { "type": "boolean" }
+      }
+    },
+    "secondaryMenuGroup": {
+      "type": "object",
+      "required": ["key", "label", "children"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "icon": { "type": "string", "minLength": 1 },
+        "children": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/navigationItem" } }
+      }
+    }
+  },
+  "required": ["schemaVersion", "metadata", "ui", "content"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "metadata": {
+      "type": "object",
+      "required": ["changeId", "pageName", "family", "templateId", "executionMode", "request", "selectionReason", "assumptions", "ruleRefs"],
+      "properties": {
+        "changeId": { "type": "string", "pattern": "^[0-9]{8}-[a-z0-9-]+$" },
+        "pageName": { "type": "string", "minLength": 1 },
+        "family": { "enum": ["list", "form", "detail", "result", "dashboard"] },
+        "templateId": { "type": "string", "minLength": 1 },
+        "executionMode": { "enum": ["shadow", "page-spec-default", "page-spec-only"] },
+        "validatedCombinations": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "request": { "type": "string" },
+        "ruleRefs": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^BL-(VIS|TPL|INT)-[0-9]{3}$" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "selectionReason": { "type": "string" }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "required": ["system", "runtime", "rendererVersion"],
+      "properties": {
+        "system": { "const": "boss-ledger" },
+        "runtime": { "const": "react-antd-page-spec" },
+        "rendererVersion": { "const": 1 }
+      }
+    },
+    "shell": {
+      "type": "object",
+      "properties": {
+        "activePrimaryKey": { "type": "string", "minLength": 1 },
+        "primaryNav": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/navigationItem" } }
+          ]
+        },
+        "selectedMenuKey": { "type": "string", "minLength": 1 },
+        "openMenuKeys": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "activeTabKey": { "type": "string", "minLength": 1 },
+        "sideMenusByPrimary": {
+          "type": "object",
+          "additionalProperties": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/secondaryMenuGroup" } }
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["capabilities"],
+      "properties": {
+        "capabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "list": { "type": "object" },
+    "form": { "type": "object" },
+    "detail": { "type": "object" },
+    "result": { "type": "object" },
+    "dashboard": { "type": "object" },
+    "workflow": { "type": "object" },
+    "states": { "type": "object" }
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "system": "boss-ledger",
+  "source": "modules/boss-ledger/director-rules/02-template-application-rules.md",
+  "templateVersion": "rules-c2b76aa437f1",
+  "core": {
+    "title": "固定运行边界",
+    "ruleIds": [
+      "BL-VIS-001",
+      "BL-VIS-002",
+      "BL-VIS-004",
+      "BL-VIS-006",
+      "BL-VIS-007",
+      "BL-VIS-008",
+      "BL-VIS-009",
+      "BL-VIS-010",
+      "BL-VIS-015",
+      "BL-VIS-016",
+      "BL-VIS-017",
+      "BL-VIS-018",
+      "BL-VIS-019",
+      "BL-VIS-020",
+      "BL-VIS-021",
+      "BL-INT-011",
+      "BL-INT-012",
+      "BL-INT-013",
+      "BL-INT-014",
+      "BL-INT-016",
+      "BL-INT-017"
+    ]
+  },
+  "templates": [
+    {
+      "id": "list.regular",
+      "family": "list",
+      "title": "常规查询列表",
+      "selection": "需要按条件查找、比较或处理一组记录，且不需要页面级统计汇总。",
+      "ruleIds": [
+        "BL-VIS-012",
+        "BL-TPL-001",
+        "BL-TPL-010",
+        "BL-TPL-012",
+        "BL-TPL-013",
+        "BL-TPL-015",
+        "BL-TPL-016",
+        "BL-INT-001",
+        "BL-INT-002",
+        "BL-INT-003",
+        "BL-INT-004",
+        "BL-INT-008",
+        "BL-INT-010"
+      ]
+    },
+    {
+      "id": "list.inline-summary",
+      "family": "list",
+      "title": "行内汇总查询列表",
+      "selection": "查询结果只需 1 至 2 个轻量指标，并且这些指标应服务于结果工具栏扫描。",
+      "ruleIds": [
+        "BL-VIS-012",
+        "BL-TPL-001",
+        "BL-TPL-010",
+        "BL-TPL-011",
+        "BL-INT-001",
+        "BL-INT-003",
+        "BL-INT-008"
+      ]
+    },
+    {
+      "id": "list.card-summary",
+      "family": "list",
+      "title": "统计卡片查询列表",
+      "selection": "查询结果需要 3 至 5 个重要指标，且统计不承担独立业务操作。",
+      "ruleIds": [
+        "BL-VIS-009",
+        "BL-VIS-012",
+        "BL-TPL-001",
+        "BL-TPL-010",
+        "BL-TPL-011",
+        "BL-INT-001",
+        "BL-INT-003",
+        "BL-INT-008"
+      ]
+    },
+    {
+      "id": "form.modal-simple",
+      "family": "form",
+      "title": "简短弹窗表单",
+      "selection": "6 个及以下相互独立字段，从来源页面发起且关闭后应保留来源上下文。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-005",
+        "BL-TPL-021",
+        "BL-VIS-022",
+        "BL-VIS-021",
+        "BL-INT-005",
+        "BL-INT-006",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "form.page-simple",
+      "family": "form",
+      "title": "独立简单表单页",
+      "selection": "从菜单、深链接、待办或独立任务进入；字段少且相互独立，不需要业务分组、右侧说明或步骤流转。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-005",
+        "BL-TPL-006",
+        "BL-TPL-019",
+        "BL-TPL-021",
+        "BL-VIS-022",
+        "BL-VIS-019",
+        "BL-VIS-021",
+        "BL-INT-005",
+        "BL-INT-006",
+        "BL-INT-016",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "form.grouped-page",
+      "family": "form",
+      "title": "分组全页表单",
+      "selection": "字段超过 10 个，或存在多个可在同一阶段完成、但必须分别核对的业务分组。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-005",
+        "BL-TPL-006",
+        "BL-TPL-007",
+        "BL-TPL-008",
+        "BL-TPL-021",
+        "BL-VIS-022",
+        "BL-VIS-019",
+        "BL-VIS-021",
+        "BL-INT-005",
+        "BL-INT-006",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "form.guided-simple",
+      "family": "form",
+      "title": "带引导的简单表单",
+      "selection": "字段较少的单阶段资金、结算、开户或规则配置任务，右侧引导能直接帮助核对或理解业务影响。",
+      "ruleIds": [
+        "BL-TPL-005",
+        "BL-TPL-006",
+        "BL-TPL-008",
+        "BL-TPL-021",
+        "BL-VIS-022",
+        "BL-VIS-015",
+        "BL-VIS-020",
+        "BL-VIS-021",
+        "BL-INT-005",
+        "BL-INT-006",
+        "BL-INT-016",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "form.staged-flow",
+      "family": "form",
+      "title": "分阶段与上传复核流程",
+      "selection": "后续工作依赖前一步完成，或需要上传、解析、复核、提交和结果反馈的明确阶段。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-006",
+        "BL-TPL-007",
+        "BL-TPL-008",
+        "BL-TPL-021",
+        "BL-VIS-022",
+        "BL-VIS-021",
+        "BL-INT-005",
+        "BL-INT-006",
+        "BL-INT-007",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "detail.record",
+      "family": "detail",
+      "title": "受控记录详情",
+      "selection": "只读查看一个业务对象；根据上下文连续性和信息规模选择 Modal、Drawer 或独立详情页。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-009",
+        "BL-TPL-013",
+        "BL-VIS-014",
+        "BL-VIS-019",
+        "BL-INT-004"
+      ]
+    },
+    {
+      "id": "result.workflow",
+      "family": "result",
+      "title": "流程结果反馈",
+      "selection": "已知来源操作完成、失败、警告或处理中需要反馈和恢复动作；不能作为独立业务入口。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-017",
+        "BL-TPL-021",
+        "BL-VIS-021",
+        "BL-INT-006",
+        "BL-INT-008",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "dashboard.overview",
+      "family": "dashboard",
+      "title": "经营概览首页",
+      "selection": "主要任务是监控业务健康度、分布或趋势；使用统一数据范围、3 至 5 个核心指标、分布、趋势和排行，且不包含逐条查询或处理。",
+      "ruleIds": [
+        "BL-TPL-002",
+        "BL-TPL-020",
+        "BL-INT-001",
+        "BL-INT-015"
+      ]
+    },
+    {
+      "id": "state.embedded",
+      "family": "empty-state",
+      "title": "页面内状态",
+      "selection": "空数据、错误、无权限或缺少前置条件属于来源页面的状态，不单独替代原页面家族。",
+      "ruleIds": [
+        "BL-TPL-004",
+        "BL-INT-008"
+      ]
+    }
+  ]
+}

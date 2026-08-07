@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "source": "package-lock.json",
+  "dependencies": {
+    "@ant-design/charts": "2.2.7",
+    "@ant-design/icons": "5.6.1",
+    "antd": "5.25.4",
+    "dayjs": "1.11.13",
+    "esbuild": "0.25.0",
+    "lodash": "4.18.1",
+    "playwright": "1.62.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "icons": [
+    "AccountBookOutlined",
+    "ApartmentOutlined",
+    "AppstoreOutlined",
+    "ArrowLeftOutlined",
+    "BankOutlined",
+    "CloseOutlined",
+    "DownOutlined",
+    "DownloadOutlined",
+    "FrownOutlined",
+    "HomeOutlined",
+    "InfoCircleOutlined",
+    "MehOutlined",
+    "MenuFoldOutlined",
+    "MenuUnfoldOutlined",
+    "PushpinFilled",
+    "PushpinOutlined",
+    "ReloadOutlined",
+    "SettingOutlined",
+    "SmileOutlined",
+    "TeamOutlined",
+    "UpOutlined",
+    "UploadOutlined"
+  ],
+  "baseFiles": [
+    "react.production.min.js",
+    "react-dom.production.min.js",
+    "dayjs.min.js",
+    "dayjs-zh-cn.js",
+    "antd-reset.css",
+    "antd.min.js",
+    "ant-design-icons.min.js"
+  ],
+  "dashboardFiles": [
+    "lodash.min.js",
+    "ant-design-charts.min.js"
+  ],
+  "hashes": {
+    "ant-design-charts.min.js": "efaae5185a76d035200c7e7ec9a81e0c1900f230ba8f797f2b7d63c9e95eef05",
+    "ant-design-icons.min.js": "f803daacb21c18b4267597cb2fc0c889874a01ed563de867235b489cd92cc315",
+    "antd-reset.css": "76d99c4599dd3918bdee15703de7a9f0cc7fc490b4f55fc0ef02538b522e5109",
+    "antd.min.js": "c864b8110ed5b862227bf9b2da101fafc9e24c0c61de2da149b31c44c1d06e1e",
+    "dayjs-zh-cn.js": "d93b074de4a1f0b5b7de810b1b4a7d180c6af6011b1f31a4455ca34e3411947b",
+    "dayjs.min.js": "9cfdb93f38afcf2d076abecd66d32bfd3383cdf1967654ebc26a26605daf4173",
+    "lodash.min.js": "a8d7e6291ad80256f976ace90824a71018d2f706992c9107b20bdced97bee27b",
+    "react-dom.production.min.js": "21758ed084cd0e37e735722ee4f3957ea960628a29dfa6c3ce1a1d47a2d6e4f7",
+    "react.production.min.js": "4b4969fa4ef3594324da2c6d78ce8766fbbc2fd121fff395aedf997db0a99a06"
+  }
+}
