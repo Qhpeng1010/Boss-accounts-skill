@@ -1,6 +1,6 @@
 import { resolveResources } from '../resolve-resources.mjs';
 import { parseListWorkbenchRequest } from './boss-ledger-list-workbench-recipe.mjs';
-import { parseStructuredWizardRequest } from './boss-ledger-wizard-recipe.mjs';
+import { parseStructuredGroupedWizardRequest, parseStructuredWizardRequest } from './boss-ledger-wizard-recipe.mjs';
 import { normalizeRecipeRequest, bridgeChangedRequest } from './recipe-request-bridge.mjs';
 
 function fallback(route, reason) {
@@ -85,7 +85,10 @@ export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute 
     try {
       const parsedList = parseListWorkbenchRequest(request);
       ensureRecipeOperations(parsedList);
-      const parsedWizard = parseStructuredWizardRequest(request);
+      const usesGroupedSteps = /(?:分组全页表单|每(?:个|一)步[^。；]*分组|每个填写步骤[^。；]*业务组|两个分组)/.test(request);
+      const parsedWizard = usesGroupedSteps
+        ? parseStructuredGroupedWizardRequest(request)
+        : parseStructuredWizardRequest(request);
       return {
         status: 'fast',
         decision: 'recipe-fast',
@@ -95,14 +98,14 @@ export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute 
         route: {
           module: route.module,
           intent: 'linked-list-wizard',
-          template: 'form.staged-flow',
+          template: usesGroupedSteps ? 'form.staged-grouped-flow' : 'form.staged-flow',
           resources: [
             'modules/boss-ledger/execution/context-packs/core.md',
             'modules/boss-ledger/execution/context-packs/index.md',
             'modules/boss-ledger/execution/context-packs/form.md'
           ]
         },
-        reason: `${parsedList.pageName}同时包含查询列表和分阶段配置，命中已验证的完整业务流程配方。`,
+        reason: `${parsedList.pageName}同时包含查询列表和${usesGroupedSteps ? '分阶段分组' : '分阶段'}配置，命中已验证的完整业务流程配方。`,
         inputRequest: bridged.changed ? normalizeRecipeRequest(request) : request,
         channel: bridged.changed ? 'flexible' : 'fast'
       };

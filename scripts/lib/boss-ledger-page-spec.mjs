@@ -37,6 +37,7 @@ const TEMPLATE_INTENTS = Object.freeze({
   'form.guided-simple': 'guided-form',
   'detail.record': 'detail',
   'form.staged-flow': 'wizard',
+  'form.staged-grouped-flow': 'grouped-wizard',
   'result.workflow': 'result',
   'dashboard.overview': 'dashboard'
 });
@@ -457,7 +458,10 @@ function validateList(errors, spec, capabilities) {
 function allFormFields(form) {
   if (Array.isArray(form.fields)) return form.fields;
   if (Array.isArray(form.groups)) return form.groups.flatMap((group) => group.fields || []);
-  if (Array.isArray(form.steps)) return form.steps.flatMap((step) => step.fields || []);
+  if (Array.isArray(form.steps)) return form.steps.flatMap((step) => [
+    ...(step.fields || []),
+    ...(step.groups || []).flatMap((group) => group.fields || [])
+  ]);
   return [];
 }
 
@@ -527,6 +531,11 @@ function validateForm(errors, spec, capabilities) {
   if (intent === 'wizard') {
     issue(errors, form.presentation === 'page' && Array.isArray(form.steps), 'form.staged-flow requires steps in a page presentation.');
   }
+  if (intent === 'grouped-wizard') {
+    issue(errors, form.presentation === 'page' && Array.isArray(form.steps), 'form.staged-grouped-flow requires steps in a page presentation.');
+    issue(errors, capabilities.includes('form.groups') && capabilities.includes('form.steps') && capabilities.includes('form.stepGroups'), 'form.staged-grouped-flow requires form.groups, form.steps, and form.stepGroups.');
+    issue(errors, form.stickyActions === true && capabilities.includes('form.stickyActions'), 'form.staged-grouped-flow requires fixed page actions.');
+  }
   if (form.sourceList !== undefined) {
     issue(errors, form.sourceList && typeof form.sourceList === 'object' && !Array.isArray(form.sourceList), 'form.sourceList must be an object.');
     issue(errors, capabilities.includes('form.sourceList'), 'form.sourceList requires form.sourceList.');
@@ -545,13 +554,30 @@ function validateForm(errors, spec, capabilities) {
   (form.steps || []).forEach((step, index) => {
     issue(errors, nonEmptyString(step.key) && nonEmptyString(step.title), `form.steps[${index}] requires key and title.`);
     issue(errors, nonEmptyString(step.description), `form.steps[${index}].description is required.`);
-    issue(errors, Array.isArray(step.fields) || step.review === true, `form.steps[${index}] requires fields or review=true.`);
+    issue(errors, Array.isArray(step.fields) || Array.isArray(step.groups) || step.review === true, `form.steps[${index}] requires fields, groups, or review=true.`);
+    if (step.groups !== undefined) {
+      issue(errors, intent === 'grouped-wizard', `form.steps[${index}].groups is reserved for form.staged-grouped-flow.`);
+      issue(errors, step.review !== true && Array.isArray(step.groups) && step.groups.length >= 2, `form.steps[${index}].groups must contain at least 2 business groups.`);
+      issue(errors, !Array.isArray(step.fields), `form.steps[${index}] cannot combine fields and groups.`);
+      (step.groups || []).forEach((group, groupIndex) => {
+        const location = `form.steps[${index}].groups[${groupIndex}]`;
+        issue(errors, nonEmptyString(group?.key) && nonEmptyString(group?.title), `${location} requires key and title.`);
+        issue(errors, Array.isArray(group?.fields) && group.fields.length > 0, `${location}.fields are required.`);
+        if (group?.container !== undefined) issue(errors, ['plain', 'card'].includes(group.container), `${location}.container must be plain or card.`);
+      });
+    }
   });
   if (form.steps) {
     issue(errors, (form.steps || []).some((step) => step.review === true) ? capabilities.includes('form.review') : true, 'Review steps require form.review.');
-    issue(errors, form.wizardGuide && typeof form.wizardGuide === 'object', 'form.wizardGuide is required for step forms.');
-    issue(errors, nonEmptyString(form.wizardGuide?.title), 'form.wizardGuide.title is required.');
-    issue(errors, nonEmptyString(form.wizardGuide?.text), 'form.wizardGuide.text is required.');
+    if (intent === 'wizard') {
+      issue(errors, form.wizardGuide && typeof form.wizardGuide === 'object', 'form.wizardGuide is required for step forms.');
+      issue(errors, nonEmptyString(form.wizardGuide?.title), 'form.wizardGuide.title is required.');
+      issue(errors, nonEmptyString(form.wizardGuide?.text), 'form.wizardGuide.text is required.');
+    }
+    if (intent === 'grouped-wizard') {
+      issue(errors, (form.steps || []).filter((step) => step.review !== true).every((step) => Array.isArray(step.groups) && step.groups.length >= 2), 'form.staged-grouped-flow requires at least 2 groups in every editable step.');
+      issue(errors, form.wizardGuide === undefined, 'form.wizardGuide is not allowed for form.staged-grouped-flow.');
+    }
     (form.steps || []).filter((step) => step.previewTable).forEach((step, index) => {
       issue(errors, step.review === true, `form.steps[${index}].previewTable requires review=true.`);
       issue(errors, step.previewTable && nonEmptyString(step.previewTable.rowKey), `form.steps[${index}].previewTable.rowKey is required.`);
@@ -725,7 +751,7 @@ export function validatePageSpec(spec, { root = ROOT, allowWorkflowResult = fals
   issue(errors, Object.hasOwn(TEMPLATE_INTENTS, normalizedTemplateId), 'metadata.templateId is invalid.');
   const familyTemplates = {
     list: new Set(['list.regular', 'list.inline-summary', 'list.card-summary']),
-    form: new Set(['form.modal-simple', 'form.page-simple', 'form.grouped-page', 'form.guided-simple', 'form.staged-flow']),
+    form: new Set(['form.modal-simple', 'form.page-simple', 'form.grouped-page', 'form.guided-simple', 'form.staged-flow', 'form.staged-grouped-flow']),
     detail: new Set(['detail.record']),
     result: new Set(['result.workflow']),
     dashboard: new Set(['dashboard.overview'])

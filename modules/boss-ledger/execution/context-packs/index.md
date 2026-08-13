@@ -14,6 +14,7 @@
 | 分组全页表单 | `form.grouped-page` | `form` | available / shadow | 字段超过 10 个，或存在多个可在同一阶段完成、但必须分别核对的业务分组。 |
 | 带引导的简单表单 | `form.guided-simple` | `form` | available / shadow | 字段较少的单阶段资金、结算、开户或规则配置任务，右侧引导能直接帮助核对或理解业务影响。 |
 | 分阶段与上传复核流程 | `form.staged-flow` | `form` | available / shadow | 后续工作依赖前一步完成，或需要上传、解析、复核、提交和结果反馈的明确阶段。 |
+| 分阶段分组全页表单 | `form.staged-grouped-flow` | `form` | available / shadow | 后续工作按步骤推进，且每个填写步骤都包含两个及以上需分别核对的业务信息组；步骤条常驻，当前步骤使用分组全页表单，不显示右侧引导区。 |
 | 受控记录详情 | `detail.record` | `detail` | available / shadow | 只读查看一个业务对象；根据上下文连续性和信息规模选择 Modal、Drawer 或独立详情页。 |
 | 流程结果反馈 | `result.workflow` | `result` | workflow-only / page-spec-only | 已知来源操作完成、失败、警告或处理中需要反馈和恢复动作；不能作为独立业务入口。 |
 | 经营概览首页 | `dashboard.overview` | `dashboard` | available / page-spec-default | 主要任务是监控业务健康度、分布或趋势；使用统一数据范围、3 至 5 个核心指标、分布、趋势和排行，且不包含逐条查询或处理。 |

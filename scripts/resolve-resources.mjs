@@ -31,17 +31,20 @@ function detectComposedIntents(rawRequest, contract) {
   };
   const hasListContract = /(?:查询条件|列表字段|查询列表|列表页面|列表页|返回[^，。；]*列表)/.test(request);
   const hasStagedFlow = /(?:第\s*[一二三四五六七八九十\d]+\s*步|分阶段|分步|上一步|下一步|预览(?:复核|确认))/.test(request);
+  const hasGroupedStagedFlow = /(?:步骤(?:条)?\s*(?:\+|加|内)?\s*(?:多个)?(?:业务)?分组|分组(?:全页)?表单.{0,24}(?:步骤|分步|分阶段)|步骤(?:条)?\s*(?:\+|加)?\s*全页表单)/.test(request);
   const hasSeparateFormFlow = /(?:(?:新增|新建|编辑|配置).{0,24}(?:新标签页|新\s*tab|独立页|独立页面|全页|分阶段|分步|步骤)|点击.{0,24}(?:新增|新建|编辑).{0,24}(?:进入|打开).{0,24}(?:配置|表单|页面))/i.test(request);
   const hasResultFlow = /(?:提交成功|成功反馈|成功页|结果页|返回(?:来源|列表)|继续新增)/.test(request);
 
   if (hasListContract) add('query-list');
-  if (hasStagedFlow) add(intentById(contract, 'wizard') ? 'wizard' : 'form');
+  if (hasStagedFlow) add(hasGroupedStagedFlow && intentById(contract, 'grouped-wizard') ? 'grouped-wizard' : intentById(contract, 'wizard') ? 'wizard' : 'form');
   else if (hasSeparateFormFlow && hasListContract) add(intentById(contract, 'form') ? 'form' : 'simple-page-form');
   if (hasResultFlow) add('result');
   return detected;
 }
 
 function choosePrimaryIntent(ranked, composed) {
+  const groupedStaged = composed.find((intent) => intent.id === 'grouped-wizard');
+  if (groupedStaged) return groupedStaged;
   const staged = composed.find((intent) => intent.id === 'wizard');
   if (staged) return staged;
   return ranked[0]?.intent || composed[0] || null;

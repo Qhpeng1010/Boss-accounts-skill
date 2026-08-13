@@ -1,5 +1,5 @@
 import { compileListWorkbench } from './boss-ledger-list-workbench-recipe.mjs';
-import { compileStructuredWizard, parseStructuredWizardRequest } from './boss-ledger-wizard-recipe.mjs';
+import { compileStructuredGroupedWizard, compileStructuredWizard, parseStructuredGroupedWizardRequest, parseStructuredWizardRequest } from './boss-ledger-wizard-recipe.mjs';
 
 const BASIC_CAPABILITIES = [
   'form.simple', 'form.groups', 'form.steps', 'form.stickyActions', 'form.review', 'form.sideGuide', 'form.upload', 'form.reviewTable', 'form.returnSource', 'form.resultSummary', 'form.resultFeedback', 'form.sourceList',
@@ -7,6 +7,8 @@ const BASIC_CAPABILITIES = [
 ];
 
 const ADVANCED_CAPABILITIES = BASIC_CAPABILITIES.map((capability) => capability === 'query.basic' ? 'query.advanced' : capability);
+const GROUPED_BASIC_CAPABILITIES = [...BASIC_CAPABILITIES, 'form.stepGroups'];
+const GROUPED_ADVANCED_CAPABILITIES = GROUPED_BASIC_CAPABILITIES.map((capability) => capability === 'query.basic' ? 'query.advanced' : capability);
 const SIMPLE_BASIC_CAPABILITIES = [
   'form.simple', 'form.returnSource', 'form.sourceList',
   ...BASIC_CAPABILITIES.filter((capability) => capability.startsWith('table.') || capability.startsWith('detail.') || capability === 'query.basic')
@@ -16,14 +18,19 @@ const SIMPLE_ADVANCED_CAPABILITIES = SIMPLE_BASIC_CAPABILITIES.map((capability) 
 function createRecord(table, form) {
   const rowKey = table.rowKey;
   const defaultRecord = { ...(table.primaryAction?.createRecord || {}), [rowKey]: table.primaryAction?.createRecord?.[rowKey] || 'R003' };
-  const formFields = form.steps.flatMap((step) => step.fields || []);
+  const formFields = form.steps.flatMap((step) => step.fields || (step.groups || []).flatMap((group) => group.fields || []));
   return { defaultRecord, fieldMap: Object.fromEntries(formFields.map((field) => [field.key, field.label])) };
 }
 
 export function compileLinkedListWizard({ rawRequest, changeId }) {
   const listSpec = compileListWorkbench({ rawRequest, changeId });
-  const formSpec = compileStructuredWizard({ rawRequest, changeId });
-  const parsedWizard = parseStructuredWizardRequest(rawRequest);
+  const usesGroupedSteps = /(?:分组全页表单|每(?:个|一)步[^。；]*分组|每个填写步骤[^。；]*业务组|两个分组)/.test(rawRequest);
+  const formSpec = usesGroupedSteps
+    ? compileStructuredGroupedWizard({ rawRequest, changeId })
+    : compileStructuredWizard({ rawRequest, changeId });
+  const parsedWizard = usesGroupedSteps
+    ? parseStructuredGroupedWizardRequest(rawRequest)
+    : parseStructuredWizardRequest(rawRequest);
   const sourceList = structuredClone(listSpec.list);
   const { defaultRecord, fieldMap } = createRecord(sourceList.table, formSpec.form);
   sourceList.table.primaryAction = {
@@ -34,8 +41,12 @@ export function compileLinkedListWizard({ rawRequest, changeId }) {
   };
 
   const advanced = sourceList.query.fields.length > 6;
-  const capabilities = advanced ? ADVANCED_CAPABILITIES : BASIC_CAPABILITIES;
-  const combination = advanced ? 'form.steps-source-list-advanced' : 'form.steps-source-list-basic';
+  const capabilities = usesGroupedSteps
+    ? (advanced ? GROUPED_ADVANCED_CAPABILITIES : GROUPED_BASIC_CAPABILITIES)
+    : (advanced ? ADVANCED_CAPABILITIES : BASIC_CAPABILITIES);
+  const combination = usesGroupedSteps
+    ? (advanced ? 'form.steps-grouped-source-list-advanced' : 'form.steps-grouped-source-list-basic')
+    : (advanced ? 'form.steps-source-list-advanced' : 'form.steps-source-list-basic');
   const pageName = listSpec.metadata.pageName;
   const sourceRuleRefs = [...new Set([...listSpec.metadata.ruleRefs, ...formSpec.metadata.ruleRefs])];
 

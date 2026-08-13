@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -16,9 +16,9 @@ function historySpecs() {
     .sort();
 }
 
-function run(label, script, specPath) {
+function run(label, script, specPath, { args = [], governed = true } = {}) {
   const relativeSpec = relative(root, specPath);
-  const result = spawnSync(process.execPath, [resolve(root, script), relativeSpec, ...(strict ? [] : ['--flexible'])], {
+  const result = spawnSync(process.execPath, [resolve(root, script), ...args, ...(governed && !strict ? ['--flexible'] : [])], {
     cwd: root,
     encoding: 'utf8',
     stdio: 'inherit',
@@ -32,8 +32,13 @@ const specs = historySpecs();
 const failures = [];
 for (const specPath of specs) {
   try {
-    run('rebuild', 'scripts/build-boss-ledger-page-spec.mjs', specPath);
-    run('static preflight', 'scripts/verify-boss-ledger-page-spec.mjs', specPath);
+    const spec = JSON.parse(readFileSync(specPath, 'utf8'));
+    run('rules read', 'scripts/read-boss-ledger-rules.mjs', specPath, {
+      args: [relative(root, specPath).replace(/\/page-spec\.json$/, ''), spec.metadata.templateId],
+      governed: false
+    });
+    run('rebuild', 'scripts/build-boss-ledger-page-spec.mjs', specPath, { args: [relative(root, specPath)] });
+    run('static preflight', 'scripts/verify-boss-ledger-page-spec.mjs', specPath, { args: [relative(root, specPath)] });
     console.log(`historical-page: pass (${relative(root, specPath)})`);
   } catch (error) {
     failures.push(error.message);

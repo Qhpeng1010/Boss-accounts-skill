@@ -45,6 +45,7 @@ const contactModal = scenarioSpec('01-contact-create');
 const guidedForm = scenarioSpec('02-settlement-account-change');
 const uploadWizard = scenarioSpec('05-settlement-import');
 const simplePageForm = readJson(resolve(fixtureRoot, 'valid/simple-page-form.json'));
+const stagedGroupedForm = readJson(resolve(fixtureRoot, 'valid/staged-grouped-form.json'));
 const runtimeSource = readFileSync(resolve(root, 'modules/boss-ledger/execution/renderer/page-spec-runtime.js'), 'utf8');
 const businessCssSource = readFileSync(resolve(root, 'modules/boss-ledger/execution/renderer/page-spec-business.css'), 'utf8');
 const contentBaseCssSource = readFileSync(resolve(root, 'modules/boss-ledger/shell/content-base.css'), 'utf8');
@@ -135,10 +136,15 @@ invalidDatePresetDeclaration.list.query.fields[0].showPresets = 'false';
 if (validatePageSpec(multipleDateRanges, { root }).length
   || !validatePageSpec(invalidDatePresetDeclaration, { root }).includes('list.query.fields[0].showPresets must be a boolean.')
   || !runtimeSource.includes('function firstQueryDateRangeField(query)')
-  || !runtimeSource.includes('return firstDateRange?.key === field?.key && field?.showPresets !== false;')
+  || !runtimeSource.includes('return Boolean(firstDateRange && field && firstDateRange.key === field.key && field.showPresets !== false);')
   || !runtimeSource.includes('queryItem(field, form, showDatePresets)')
   || !runtimeSource.includes('field.key === datePresetFieldKey')) {
   failures.push('query-date-presets: only the first date-range query field may show presets; showPresets: false must use the standard RangePicker and later date ranges must not inherit presets.');
+} else {
+  passed += 1;
+}
+if (!runtimeSource.includes('return Boolean(firstDateRange && field && firstDateRange.key === field.key && field.showPresets !== false);')) {
+  failures.push('query-date-presets: lists without a date-range field must not treat two missing fields as a date-preset match and crash during initial render.');
 } else {
   passed += 1;
 }
@@ -286,6 +292,16 @@ const directCases = [
     'form.wizardGuide is reserved for form.staged-flow step forms.'
   ],
   [
+    'staged-grouped-step-with-one-group',
+    { ...stagedGroupedForm, form: { ...stagedGroupedForm.form, steps: [{ ...stagedGroupedForm.form.steps[0], groups: [stagedGroupedForm.form.steps[0].groups[0]] }, ...stagedGroupedForm.form.steps.slice(1)] } },
+    'form.steps[0].groups must contain at least 2 business groups.'
+  ],
+  [
+    'staged-grouped-form-with-guide',
+    { ...stagedGroupedForm, form: { ...stagedGroupedForm.form, wizardGuide: { title: '不应出现', text: '分组步骤页不能使用右侧引导。' } } },
+    'form.wizardGuide is not allowed for form.staged-grouped-flow.'
+  ],
+  [
     'default-list-with-shadow-summary',
     { ...merchantPilot, content: { ...merchantPilot.content, capabilities: [...merchantPilot.content.capabilities, 'summary.inline'] }, list: { ...merchantPilot.list, summary: { items: [{ key: 'count', label: '商户数', value: 4 }] } } },
     'list.regular cannot use inline summary or statistics cards.'
@@ -356,8 +372,10 @@ if (!runtimeSource.includes('function renderWorkflowResult')
   passed += 1;
 }
 
-if (!businessCssSource.includes('.boss-result-page { flex: 1 1 auto; min-height: 100%;')
-  || !shellCssSource.includes('.boss-shell-content-body { flex: 1 1 0; min-height: 0;')
+if (!businessCssSource.includes('.boss-result-page { flex: 1 0 auto; min-height: 100%;')
+  || !shellCssSource.includes('.boss-shell { min-width: 1120px; height: 100vh; overflow: hidden;')
+  || !shellCssSource.includes('.boss-shell-content { flex: 1; min-height: 0; overflow: auto;')
+  || !shellCssSource.includes('.boss-shell-content-body { flex: 1 0 auto; min-height: 0; overflow: visible;')
   || !businessCssSource.includes('.boss-content-stack { flex: 1 1 auto;')) {
   failures.push('result-full-content-area: success Result surfaces must fill the Shell content body and center their content in that available space.');
 } else {
@@ -375,6 +393,12 @@ if (!runtimeSource.includes("className: 'boss-confirm-modal',\n        centered:
 }
 
 if (!shellRuntimeSource.includes('const openTab = (tab) =>')
+  || !shellRuntimeSource.includes('function initialTabs(config)')
+  || !shellRuntimeSource.includes('const activateTab = (key) =>')
+  || !shellRuntimeSource.includes('onChange: activateTab')
+  || shellRuntimeSource.includes('onChange: activateRoute')
+  || !runtimeSource.includes('const rootTabKey = shell.activeTabKey || selectedMenuKey;')
+  || !runtimeSource.includes('tabs: shell.tabs || [{ key: rootTabKey')
   || !shellRuntimeSource.includes('renderContent?.({ activeTabKey, activeTab, activePrimaryKey, selectedMenuKey, tabs, openTab, closeTab })')
   || !runtimeSource.includes('function LinkedWorkflowPage({ spec, activeTabKey, rootTabKey, tabs, openTab, closeTab })')
   || !runtimeSource.includes('const workflowTabKey = `${rootTabKey}--create`;')
@@ -395,7 +419,7 @@ if (!previewValidatorSource.includes("pageSpec?.metadata?.family === 'list'")
 if (!runtimeSource.includes("const DEFAULT_QUERY_DATE_PRESETS = ['今日', '近 7 日', '近 30 日']")
   || !runtimeSource.includes('function firstQueryDateRangeField(query)')
   || !runtimeSource.includes('function usesQueryDatePresets(query, field)')
-  || !runtimeSource.includes('field?.showPresets !== false')
+  || !runtimeSource.includes('field.showPresets !== false')
   || !runtimeSource.includes('function queryRowTops')
   || !runtimeSource.includes("'data-boss-query-measurement': 'actual-row-count'")
   || runtimeSource.includes('collapseThreshold')
@@ -484,6 +508,25 @@ if (!runtimeSource.includes("spec.metadata.templateId === 'form.grouped-page' &&
   || !businessCssSource.includes('.boss-grouped-form-module .boss-form-section-card .ant-card-body { padding: 20px; }')
   || settlementForm.form.groups.some((group) => group.container === 'card')) {
   failures.push('grouped-form-surface: grouped page forms must use separated white business surfaces with 20px module spacing, no outer border, and no title divider.');
+} else {
+  passed += 1;
+}
+
+if (!runtimeSource.includes("const usesGroupedSteps = spec.metadata.templateId === 'form.staged-grouped-flow';")
+  || !runtimeSource.includes('const currentGroups = currentStep.groups || [];')
+  || !runtimeSource.includes("? { ...resolvedFormLayout, layout: 'vertical', labelCol: undefined, className: 'boss-vertical-form', fieldsClassName: '' }")
+  || !runtimeSource.includes("size: usesGroupedSteps ? 'small' : undefined")
+  || !runtimeSource.includes("? h('section', { className: 'boss-staged-grouped-review' }, h(Descriptions" )
+  || !runtimeSource.includes('usesGroupedSteps ? null : h(\'aside\', { className: \'wizard-guide-pane\' }')
+  || !businessCssSource.includes('.boss-staged-grouped-page { min-height: 100%; padding: 0 0 64px;')
+  || !businessCssSource.includes('.boss-staged-grouped-page .boss-wizard-steps { box-sizing: border-box; margin: 0 0 16px;')
+  || !businessCssSource.includes('.boss-staged-grouped-step { display: flex; flex-direction: column; align-items: stretch; }')
+  || !businessCssSource.includes('.boss-staged-grouped-step .boss-form-section-card { border: 0;')
+  || !businessCssSource.includes('.boss-staged-grouped-step .boss-form-grid { grid-template-columns: repeat(4, minmax(0, 1fr));')
+  || !businessCssSource.includes('.boss-staged-grouped-review { min-height: 240px; padding: 20px; background: var(--boss-container); border-radius: var(--boss-card-radius); }')
+  || stagedGroupedForm.form.steps.filter((step) => !step.review).some((step) => step.groups.some((group) => group.fields.length < 4))
+  || validatePageSpec(stagedGroupedForm, { root }).length) {
+  failures.push('staged-grouped-form-runtime: grouped step forms must render the active step as separate full-page groups without a guide pane and retain the existing workflow controls.');
 } else {
   passed += 1;
 }

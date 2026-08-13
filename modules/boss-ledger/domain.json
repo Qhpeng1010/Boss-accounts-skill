@@ -54,6 +54,7 @@
     {"id":"guided-form","pageType":"guided-form","executionFamily":"form","signals":["右侧说明","操作提示","说明表单","引导表单"],"templateId":"form.guided-simple"},
     {"id":"detail","pageType":"detail","executionFamily":"detail","signals":["详情页","抽屉详情","详情"],"templateId":"detail.record"},
     {"id":"wizard","pageType":"wizard","executionFamily":"form","signals":["wizard","步骤页","分步流程","步骤条","分为3步","分为三步","3步流程","三步流程","第一步","第二步","第三步","上一步","下一步","预览确认","确认提交"],"templateId":"form.staged-flow"},
+    {"id":"grouped-wizard","pageType":"grouped-wizard","executionFamily":"form","signals":["步骤条+全页表单","步骤条加全页表单","步骤内分组","分步骤分组表单","分步骤全页表单","步骤分组表单","分阶段分组表单"],"templateId":"form.staged-grouped-flow"},
     {"id":"result","pageType":"result","executionFamily":"result","signals":["result","结果页","成功页","失败页"],"templateId":"result.workflow"},
     {"id":"empty-state","pageType":"empty-state","executionFamily":"empty-state","signals":["empty state","空状态","空页"],"templateId":"state.embedded"}
   ]

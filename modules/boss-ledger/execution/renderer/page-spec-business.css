@@ -4,7 +4,7 @@
 .boss-query-module { padding: 16px; }
 .boss-result-module { width: 100%; min-width: 0; max-width: 100%; padding: 0 16px 16px; min-height: 360px; overflow: hidden; }
 .boss-form-module, .boss-detail-module { flex: 1 0 auto; min-height: 480px; padding: 16px; border-radius: var(--boss-card-radius); overflow: hidden; }
-.boss-result-page { flex: 1 1 auto; min-height: 100%; padding: 48px 16px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border-radius: var(--boss-card-radius); overflow: hidden; }
+.boss-result-page { flex: 1 0 auto; min-height: 100%; padding: 48px 16px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border-radius: var(--boss-card-radius); overflow: hidden; }
 .boss-workflow-result { width: min(100%, 640px); padding: 0; }
 .boss-result-extra { display: flex; flex-direction: column; align-items: center; gap: 24px; margin-top: 32px; }
 .boss-result-actions { justify-content: center; }
@@ -139,6 +139,19 @@
 .boss-shell-sider.collapsed + .boss-shell-workspace .boss-full-page-action-bar { left: 48px; }
 .boss-form-steps { margin: 4px auto 24px; max-width: 760px; }
 .boss-wizard-page { min-height: calc(100vh - 188px); background: var(--boss-container); padding: 24px 32px 72px; border-radius: var(--boss-card-radius); overflow: hidden; }
+.boss-staged-grouped-page { min-height: 100%; padding: 0 0 64px; background: var(--boss-page-bg); overflow: visible; }
+.boss-staged-grouped-page .wizard-content-frame { min-height: 0; justify-content: flex-start; }
+.boss-staged-grouped-page .boss-wizard-steps { box-sizing: border-box; margin: 0 0 16px; padding: 24px 32px; background: var(--boss-container); border-radius: var(--boss-card-radius); }
+.boss-staged-grouped-body { min-width: 0; }
+.boss-staged-grouped-step { display: flex; flex-direction: column; align-items: stretch; }
+.boss-staged-grouped-step .boss-form-section-card { border: 0; border-radius: var(--boss-card-radius); box-shadow: none; background: var(--boss-container); }
+.boss-staged-grouped-step .boss-form-section-card + .boss-form-section-card { margin-top: 16px; }
+.boss-staged-grouped-step .boss-form-section-card .ant-card-head { min-height: auto; padding: 20px 20px 0; border-bottom: 0; }
+.boss-staged-grouped-step .boss-form-section-card .ant-card-head-title { padding: 0; font-size: 16px; }
+.boss-staged-grouped-step .boss-form-section-card .ant-card-body { padding: 20px; }
+.boss-staged-grouped-step .boss-form-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 16px; row-gap: 24px; }
+.boss-staged-grouped-step .boss-form-grid .ant-form-item { margin-bottom: 0; }
+.boss-staged-grouped-review { min-height: 240px; padding: 20px; background: var(--boss-container); border-radius: var(--boss-card-radius); }
 .wizard-content-frame { flex: 1 0 auto; min-height: 440px; display: flex; flex-direction: column; justify-content: center; }
 .boss-wizard-steps { width: 100%; margin: 8px auto 32px; }
 .wizard-body-grid { display: grid; grid-template-columns: minmax(0, 65%) minmax(0, 35%); gap: 16px; align-items: center; }
@@ -181,12 +194,14 @@
   .boss-query-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .boss-query-actions { grid-column: 2; }
   .boss-full-page-form .boss-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .boss-staged-grouped-step .boss-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .boss-guided-form-layout { grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); gap: 32px; }
   .boss-dashboard-scope-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .boss-dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 768px) {
   .boss-form-grid, .boss-result-summary, .boss-detail-metrics, .wizard-body-grid, .wizard-field-grid, .boss-dashboard-scope-grid, .boss-dashboard-metrics, .boss-dashboard-charts { grid-template-columns: minmax(0, 1fr); }
+  .boss-staged-grouped-step .boss-form-grid { grid-template-columns: minmax(0, 1fr); }
   .boss-query-grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: 16px; }
   .boss-query-date-range-field, .boss-query-actions { grid-column: 1; }
   .boss-query-actions { justify-self: start; }

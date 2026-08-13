@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "system": "boss-ledger",
   "source": "modules/boss-ledger/director-rules/02-template-application-rules.md",
-  "templateVersion": "rules-c2b76aa437f1",
+  "templateVersion": "rules-9c2390830cd2",
   "core": {
     "title": "固定运行边界",
     "ruleIds": [
@@ -171,6 +171,28 @@
         "BL-TPL-021",
         "BL-VIS-022",
         "BL-VIS-021",
+        "BL-INT-005",
+        "BL-INT-006",
+        "BL-INT-007",
+        "BL-INT-017"
+      ]
+    },
+    {
+      "id": "form.staged-grouped-flow",
+      "family": "form",
+      "title": "分阶段分组全页表单",
+      "selection": "后续工作按步骤推进，且每个填写步骤都包含两个及以上需分别核对的业务信息组；步骤条常驻，当前步骤使用分组全页表单，不显示右侧引导区。",
+      "ruleIds": [
+        "BL-TPL-003",
+        "BL-TPL-005",
+        "BL-TPL-006",
+        "BL-TPL-007",
+        "BL-TPL-008",
+        "BL-TPL-021",
+        "BL-VIS-009",
+        "BL-VIS-019",
+        "BL-VIS-021",
+        "BL-VIS-022",
         "BL-INT-005",
         "BL-INT-006",
         "BL-INT-007",

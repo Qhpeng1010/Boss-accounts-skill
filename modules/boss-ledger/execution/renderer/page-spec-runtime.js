@@ -87,7 +87,8 @@
       workspace: [{ key: 'business-group', label: '业务管理', icon: 'AppstoreOutlined', children: [{ key: pageKey, label: pageName, route: `/workspace/${pageKey}`, closable: false }] }],
       system: [{ key: 'system-group', label: '系统管理', icon: 'SettingOutlined', children: [{ key: pageKey, label: pageName, route: `/system/${pageKey}`, closable: false }] }]
     };
-    const selectedMenuKey = shell.selectedMenuKey || pageKey;
+    const selectedMenuKey = shell.selectedMenuKey || shell.activeTabKey || pageKey;
+    const rootTabKey = shell.activeTabKey || selectedMenuKey;
     const inferredOpenMenuKey = selectedMenuGroupKey(sideMenusByPrimary[primaryKey], selectedMenuKey);
     return {
       topbar: shell.topbar || {
@@ -97,11 +98,11 @@
       logoSrc: './assets/boss-logo.svg',
       primaryNav,
       sideMenusByPrimary,
-      tabs: shell.tabs || [{ key: pageKey, label: pageName, route: `/${primaryKey}/${pageKey}`, closable: false }],
+      tabs: shell.tabs || [{ key: rootTabKey, label: pageName, route: `/${primaryKey}/${rootTabKey}`, closable: false }],
       activePrimaryKey: primaryKey,
       selectedMenuKey,
       openMenuKeys: shell.openMenuKeys || (inferredOpenMenuKey ? [inferredOpenMenuKey] : [`${primaryKey === 'workspace' ? 'business' : primaryKey}-group`]),
-      activeTabKey: shell.activeTabKey || pageKey,
+      activeTabKey: rootTabKey,
       footerText: shell.footerText
     };
   }
@@ -148,7 +149,7 @@
 
   function usesQueryDatePresets(query, field) {
     const firstDateRange = firstQueryDateRangeField(query);
-    return firstDateRange?.key === field?.key && field?.showPresets !== false;
+    return Boolean(firstDateRange && field && firstDateRange.key === field.key && field.showPresets !== false);
   }
 
   function queryInitialValues(query) {
@@ -792,18 +793,35 @@
   function WizardFormPage({ spec, onReturnSource }) {
     const formSpec = spec.form;
     const wizardSteps = [...formSpec.steps];
+    const usesGroupedSteps = spec.metadata.templateId === 'form.staged-grouped-flow';
     const [form] = Form.useForm();
     const [step, setStep] = React.useState(0);
     const [submitting, setSubmitting] = React.useState(false);
     const [completed, setCompleted] = React.useState(false);
     const [submitError, setSubmitError] = React.useState(null);
     const [submittedValues, setSubmittedValues] = React.useState(null);
-    const allFields = wizardSteps.flatMap((item) => item.fields || []);
+    const allFields = wizardSteps.flatMap((item) => [
+      ...(item.fields || []),
+      ...(item.groups || []).flatMap((group) => group.fields || [])
+    ]);
     const initialValues = {};
     allFields.forEach((field) => { if (Object.hasOwn(field, 'default')) initialValues[field.key] = initialValueForField(field); });
     const currentStep = wizardSteps[step];
-    const currentFields = currentStep.fields || [];
-    const formLayout = resolveFormLayout(formSpec, currentFields);
+    const currentGroups = currentStep.groups || [];
+    const currentFields = currentStep.fields || currentGroups.flatMap((group) => group.fields || []);
+    const resolvedFormLayout = resolveFormLayout(formSpec, currentFields);
+    const formLayout = usesGroupedSteps
+      ? { ...resolvedFormLayout, layout: 'vertical', labelCol: undefined, className: 'boss-vertical-form', fieldsClassName: '' }
+      : resolvedFormLayout;
+    const currentStepContent = currentStep.review && currentStep.previewTable
+      ? h(Table, { className: 'boss-wizard-preview-table', rowKey: currentStep.previewTable.rowKey, columns: dataColumns(currentStep.previewTable.columns), dataSource: currentStep.previewTable.rows || [], pagination: false, size: 'small' })
+      : currentStep.review
+        ? usesGroupedSteps
+          ? h('section', { className: 'boss-staged-grouped-review' }, h(Descriptions, { column: 2, size: 'small', items: Object.entries(form.getFieldsValue(true)).map(([key, value]) => ({ key, label: allFields.find((field) => field.key === key)?.label || key, children: Array.isArray(value) ? `${value.length} 个文件` : String(value ?? '-') })) }))
+          : h(Descriptions, { column: 2, size: 'small', items: Object.entries(form.getFieldsValue(true)).map(([key, value]) => ({ key, label: allFields.find((field) => field.key === key)?.label || key, children: Array.isArray(value) ? `${value.length} 个文件` : String(value ?? '-') })) })
+        : usesGroupedSteps
+          ? h('div', { className: `boss-staged-grouped-step ${formLayout.fieldsClassName}` }, ...currentGroups.map((group) => h(Card, { key: group.key, size: 'small', className: 'boss-form-section boss-form-section-card', title: group.title }, h('div', { className: `boss-form-grid ${formLayout.fieldsClassName}` }, ...(group.fields || []).map((field) => formItem(field))))))
+          : h('div', { className: `wizard-field-grid ${formLayout.fieldsClassName}` }, ...currentFields.map((field) => formItem(field)));
 
     const next = async () => {
       await form.validateFields(currentFields.map((field) => field.key));
@@ -855,18 +873,14 @@
         }, () => { setCompleted(false); setSubmitError(null); form.resetFields(); setStep(0); })));
     }
 
-    return h('div', { className: 'boss-wizard-page', 'data-boss-wizard-template': 'fixed' },
+    return h('div', { className: `boss-wizard-page${usesGroupedSteps ? ' boss-staged-grouped-page' : ''}`, 'data-boss-wizard-template': usesGroupedSteps ? 'grouped' : 'fixed' },
       h('div', { className: 'wizard-content-frame' },
-        h(Steps, { current: step, items: wizardSteps.map((item) => ({ title: item.title, description: item.description })), className: 'boss-wizard-steps' }),
-        h('div', { className: 'wizard-body-grid' },
+        h(Steps, { current: step, size: usesGroupedSteps ? 'small' : undefined, items: wizardSteps.map((item) => ({ title: item.title, description: item.description })), className: 'boss-wizard-steps' }),
+        h('div', { className: usesGroupedSteps ? 'boss-staged-grouped-body' : 'wizard-body-grid' },
           h('section', { className: 'wizard-form-pane' }, h(Form, { form, layout: formLayout.layout, labelCol: formLayout.labelCol, className: formLayout.className, 'data-boss-form-layout': formLayout.layout, initialValues },
-            currentStep.review && currentStep.previewTable
-              ? h(Table, { className: 'boss-wizard-preview-table', rowKey: currentStep.previewTable.rowKey, columns: dataColumns(currentStep.previewTable.columns), dataSource: currentStep.previewTable.rows || [], pagination: false, size: 'small' })
-              : currentStep.review
-                ? h(Descriptions, { column: 2, size: 'small', items: Object.entries(form.getFieldsValue(true)).map(([key, value]) => ({ key, label: allFields.find((field) => field.key === key)?.label || key, children: Array.isArray(value) ? `${value.length} 个文件` : String(value ?? '-') })) })
-              : h('div', { className: `wizard-field-grid ${formLayout.fieldsClassName}` }, ...currentFields.map((field) => formItem(field))),
+            currentStepContent,
             submitError ? h(Alert, { className: 'boss-form-submit-error', type: 'error', showIcon: true, message: submitError.message, description: submitError.recovery }) : null)),
-          h('aside', { className: 'wizard-guide-pane' },
+          usesGroupedSteps ? null : h('aside', { className: 'wizard-guide-pane' },
             React.createElement('img', { className: 'wizard-guide-image', src: './assets/wizard-guide.png', alt: formSpec.wizardGuide.alt || '流程引导' }),
             h('div', { className: 'wizard-guide-title' }, formSpec.wizardGuide.title),
             h('div', { className: 'wizard-guide-text' }, formSpec.wizardGuide.text)))),

@@ -22,6 +22,7 @@ const steps = [
   ['capability-scenarios-detail', 'scripts/verify-boss-ledger-capability-scenarios.mjs', ['--scenarios=13-split-record-drawer,14-merchant-settlement-long-detail,15-settlement-account-tabs']],
   ['form-fixture', 'scripts/run-boss-ledger-page-spec-fixture.mjs', ['modules/boss-ledger/execution/fixtures/valid/grouped-form.json']],
   ['simple-page-form-fixture', 'scripts/run-boss-ledger-page-spec-fixture.mjs', ['modules/boss-ledger/execution/fixtures/valid/simple-page-form.json']],
+  ['staged-grouped-form-fixture', 'scripts/run-boss-ledger-page-spec-fixture.mjs', ['modules/boss-ledger/execution/fixtures/valid/staged-grouped-form.json']],
   ['detail-fixture', 'scripts/run-boss-ledger-page-spec-fixture.mjs', ['modules/boss-ledger/execution/fixtures/valid/grouped-detail.json']]
 ];
 

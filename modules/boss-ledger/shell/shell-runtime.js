@@ -21,6 +21,21 @@
     return result;
   }
 
+  function initialTabs(config) {
+    const configured = Array.isArray(config.tabs) ? config.tabs : [];
+    const activeKey = config.activeTabKey || configured[0]?.key;
+    if (!activeKey || configured.some((tab) => tab.key === activeKey)) return configured;
+    const catalog = new Map();
+    Object.values(config.sideMenusByPrimary || {}).forEach((items) => flattenRoutes(items, catalog));
+    const route = catalog.get(activeKey);
+    return configured.concat({
+      key: activeKey,
+      label: route?.label || activeKey,
+      route: route?.route,
+      closable: route?.closable !== false
+    });
+  }
+
   function BossLedgerShell({ config, renderContent }) {
     const { Menu, Tabs, Empty } = antd;
     const { MenuFoldOutlined, MenuUnfoldOutlined, ReloadOutlined } = icons;
@@ -28,8 +43,13 @@
     const [activePrimaryKey, setActivePrimaryKey] = React.useState(config.activePrimaryKey);
     const [selectedMenuKey, setSelectedMenuKey] = React.useState(config.selectedMenuKey);
     const [openMenuKeys, setOpenMenuKeys] = React.useState(config.openMenuKeys || []);
-    const [activeTabKey, setActiveTabKey] = React.useState(config.activeTabKey);
-    const [tabs, setTabs] = React.useState(config.tabs || []);
+    const [tabs, setTabs] = React.useState(() => initialTabs(config));
+    const [activeTabKey, setActiveTabKey] = React.useState(() => {
+      const preparedTabs = initialTabs(config);
+      return preparedTabs.some((tab) => tab.key === config.activeTabKey)
+        ? config.activeTabKey
+        : preparedTabs[0]?.key;
+    });
 
     const rawMenuItems = config.sideMenusByPrimary?.[activePrimaryKey] || [];
     const menuItems = normalizeMenuItems(rawMenuItems);
@@ -50,6 +70,14 @@
       config.onRouteChange?.(route || { key });
     };
 
+    const activateTab = (key) => {
+      if (!tabs.some((tab) => tab.key === key)) return;
+      setActiveTabKey(key);
+      const route = routeCatalog.get(key);
+      if (route) setSelectedMenuKey(key);
+      config.onRouteChange?.(route || tabs.find((tab) => tab.key === key) || { key });
+    };
+
     const openTab = (tab) => {
       if (!tab?.key) return;
       setTabs((current) => current.some((item) => item.key === tab.key)
@@ -67,7 +95,7 @@
       if (targetKey === activeTabKey) {
         const nextTab = nextTabs[Math.min(Math.max(targetIndex - 1, 0), nextTabs.length - 1)];
         setActiveTabKey(nextTab.key);
-        setSelectedMenuKey(nextTab.key);
+        if (routeCatalog.has(nextTab.key)) setSelectedMenuKey(nextTab.key);
         config.onRouteChange?.(nextTab);
       }
     };
@@ -137,7 +165,7 @@
             hideAdd: true,
             activeKey: activeTabKey,
             items: tabItems,
-            onChange: activateRoute,
+            onChange: activateTab,
             onEdit: (key, action) => action === 'remove' && closeTab(key)
           })),
           React.createElement('section', { className: 'boss-shell-content', 'data-boss-shell': 'content' },

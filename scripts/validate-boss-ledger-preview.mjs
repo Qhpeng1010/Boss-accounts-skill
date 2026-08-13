@@ -400,7 +400,7 @@ function checkSource(html) {
     const hasPrimaryDerivedPresetSelection = /const\s+selected\s*=\s*isSameQueryDateRange\(value,\s*range\)/i.test(source)
       && /boss-query-date-preset\$\{selected\s*\?\s*['"]\s+is-selected['"]\s*:\s*['"]['"]\}/i.test(source)
       && /\.boss-query-date-preset\.is-selected[^}]*color\s*:\s*var\(--boss-primary\)[^}]*background\s*:\s*var\(--boss-selected-bg\)/i.test(source);
-    const limitsPresetsToFirstDateRange = /function\s+usesQueryDatePresets\(query,\s*field\)[\s\S]{0,280}firstDateRange\?\.key\s*===\s*field(?:\?\.)?key[\s\S]{0,100}showPresets\s*!==\s*false/i.test(source)
+    const limitsPresetsToFirstDateRange = /const\s+datePresetFieldKey\s*=\s*usesQueryDatePresets\(list\.query,\s*firstDateRangeField\)[\s\S]{0,120}?firstDateRangeField\.key/i.test(source)
       && /field\.key\s*===\s*datePresetFieldKey/i.test(source)
       && /queryItem\(field,\s*form,\s*showDatePresets\)/i.test(source);
     const supportsStandardDateRangeFallback = /if\s*\(showDatePresets\)\s*\{[\s\S]{0,300}QueryDateRangeControl/i.test(source)
@@ -461,7 +461,15 @@ function checkSource(html) {
   if (/\.boss-shell-footer[^{]*\{[^}]*position\s*:\s*(?:fixed|sticky)/i.test(source)) {
     fail('validate', 'Shell footer must stay in normal content flow, not fixed or sticky');
   } else {
-    pass('validate', 'Shell footer stays in the content scroll flow');
+    const isolatedWorkspaceScroll = /\.boss-shell\s*\{[^}]*(?<!-)height\s*:\s*100vh[^}]*overflow\s*:\s*hidden/i.test(source)
+      && /\.boss-shell-body\s*\{[^}]*(?<!-)height\s*:\s*calc\(100vh\s*-\s*92px\)[^}]*overflow\s*:\s*hidden/i.test(source)
+      && /\.boss-shell-content\s*\{[^}]*flex\s*:\s*1[^}]*overflow\s*:\s*auto/i.test(source)
+      && /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+0\s+auto[^}]*overflow\s*:\s*visible/i.test(source);
+    if (isolatedWorkspaceScroll) {
+      pass('validate', 'Only the workspace content scrolls, and long business content pushes the Footer below it');
+    } else {
+      fail('validate', 'The Shell must stay fixed while the workspace content scrolls with the Footer after business content');
+    }
   }
 
   if (/\.boss-shell-footer[^{]*\{[^}]*background\s*:\s*var\(--boss-page-bg\)[^}]*border-top\s*:\s*1px\s+solid\s+var\(--boss-divider\)/i.test(source)) {
@@ -477,9 +485,9 @@ function checkSource(html) {
     fail('validate', 'Empty business routes must use .boss-shell-empty as a full-height white module with centered content');
   }
 
-  const fullHeightResultRule = /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+1\s+0[^}]*min-height\s*:\s*0/i.test(source)
+  const fullHeightResultRule = /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+0\s+auto[^}]*min-height\s*:\s*0/i.test(source)
     && /\.boss-content-stack\s*\{[^}]*flex\s*:\s*1\s+1\s+auto[^}]*min-height\s*:\s*100%/i.test(source)
-    && /\.boss-result-page\s*\{[^}]*flex\s*:\s*1\s+1\s+auto[^}]*min-height\s*:\s*100%[^}]*align-items\s*:\s*center[^}]*justify-content\s*:\s*center/i.test(source);
+    && /\.boss-result-page\s*\{[^}]*flex\s*:\s*1\s+0\s+auto[^}]*min-height\s*:\s*100%[^}]*align-items\s*:\s*center[^}]*justify-content\s*:\s*center/i.test(source);
   if (fullHeightResultRule) {
     pass('validate', 'Success Result surfaces fill the Shell content area and center their content');
   } else {
@@ -779,7 +787,7 @@ function checkSource(html) {
   }
 
   if (usesTemplate('form.staged-flow')) {
-    const wizardUsesCurrentStep = /const currentFields = currentStep\.fields \|\| \[\];\s*const formLayout = resolveFormLayout\(formSpec, currentFields\);/i.test(source);
+    const wizardUsesCurrentStep = /const currentFields = currentStep\.fields \|\| currentGroups\.flatMap\(\(group\) => group\.fields \|\| \[\]\);\s*const resolvedFormLayout = resolveFormLayout\(formSpec, currentFields\);[\s\S]{0,400}const formLayout = usesGroupedSteps[\s\S]{0,400}: resolvedFormLayout;/i.test(source);
     if (hasRuleDrivenFormLayout && wizardUsesCurrentStep) {
       pass('validate', 'Staged form evaluates the 6-field threshold from the current step only');
     } else {
@@ -787,6 +795,29 @@ function checkSource(html) {
     }
   } else {
     pass('validate', 'Staged-form template not selected; current-step layout check skipped');
+  }
+
+  if (usesTemplate('form.staged-grouped-flow')) {
+    const stagedGroupedLayout = /const usesGroupedSteps = spec\.metadata\.templateId === 'form\.staged-grouped-flow';[\s\S]{0,1200}const currentGroups = currentStep\.groups \|\| \[\];[\s\S]{0,1200}currentGroups\.flatMap\(\(group\) => group\.fields \|\| \[\]\)/i.test(source)
+      && /usesGroupedSteps\s*\?\s*\{\s*\.\.\.resolvedFormLayout,\s*layout:\s*'vertical',\s*labelCol:\s*undefined,\s*className:\s*'boss-vertical-form'/i.test(source)
+      && /size:\s*usesGroupedSteps\s*\?\s*'small'\s*:\s*undefined/i.test(source)
+      && /currentStep\.review[\s\S]{0,900}usesGroupedSteps[\s\S]{0,300}boss-staged-grouped-review[\s\S]{0,300}h\(Descriptions/i.test(source)
+      && /usesGroupedSteps\s*\?\s*h\('div', \{ className: `boss-staged-grouped-step/i.test(source)
+      && /usesGroupedSteps\s*\?\s*null\s*:\s*h\('aside', \{ className: 'wizard-guide-pane'/i.test(source)
+      && /\.boss-staged-grouped-page[^\{]*\{[^}]*padding\s*:\s*0\s+0\s+64px/i.test(source)
+      && /\.boss-staged-grouped-page \.boss-wizard-steps[^\{]*\{[^}]*margin\s*:\s*0\s+0\s+16px/i.test(source)
+      && /\.boss-staged-grouped-step\s*\{[^}]*display\s*:\s*flex[^}]*flex-direction\s*:\s*column[^}]*align-items\s*:\s*stretch/i.test(source)
+      && /\.boss-staged-grouped-step \.boss-form-section-card[^\{]*\{[^}]*border\s*:\s*0/i.test(source)
+      && /\.boss-staged-grouped-step \.boss-form-grid[^\{]*\{[^}]*grid-template-columns\s*:\s*repeat\(4,/i.test(source)
+      && /\.boss-staged-grouped-review[^\{]*\{[^}]*background\s*:\s*var\(--boss-container\)[^}]*border-radius\s*:\s*var\(--boss-card-radius\)/i.test(source)
+      && /\.wizard-action-bar[^\{]*\{[^}]*position\s*:\s*fixed[^}]*height\s*:\s*48px/i.test(source);
+    if (stagedGroupedLayout) {
+      pass('validate', 'Staged grouped forms keep Steps visible, render the current step as separated full-page groups, omit the guide pane, and retain the fixed action bar');
+    } else {
+      fail('validate', 'Staged grouped forms must keep Steps visible, render separated full-page groups without a guide pane, and retain the fixed action bar');
+    }
+  } else {
+    pass('validate', 'Staged grouped-form template not selected; grouped-step layout check skipped');
   }
 
   const hasDrawer = /\bDrawer\b/.test(source);

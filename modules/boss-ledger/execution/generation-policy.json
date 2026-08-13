@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "policyVersion": "2026.08.06.20",
+  "policyVersion": "2026.08.13.1",
   "system": "boss-ledger",
   "allowedModes": ["shadow", "page-spec-default", "page-spec-only"],
   "families": [
@@ -40,7 +40,7 @@
     },
     {
       "id": "form",
-      "intents": ["modal-form", "simple-page-form", "full-page-form", "guided-form", "wizard"],
+      "intents": ["modal-form", "simple-page-form", "full-page-form", "guided-form", "wizard", "grouped-wizard"],
       "availability": "available",
       "mode": "shadow",
       "intentModes": {
@@ -51,6 +51,7 @@
         "form.simple",
         "form.groups",
         "form.steps",
+        "form.stepGroups",
         "form.stickyActions",
         "form.review",
         "form.sideGuide",
@@ -224,6 +225,30 @@
       "ruleRefs": ["BL-TPL-007", "BL-INT-006", "BL-INT-007"]
     },
     {
+      "id": "form.steps-grouped",
+      "family": "form",
+      "templateIds": ["form.staged-grouped-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.groups", "form.steps", "form.stepGroups", "form.stickyActions", "form.review"],
+      "ruleRefs": ["BL-TPL-007", "BL-VIS-009", "BL-INT-005", "BL-INT-006", "BL-INT-007"]
+    },
+    {
+      "id": "form.steps-grouped-upload",
+      "family": "form",
+      "templateIds": ["form.staged-grouped-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.groups", "form.steps", "form.stepGroups", "form.stickyActions", "form.review", "form.upload"],
+      "ruleRefs": ["BL-TPL-006", "BL-TPL-007", "BL-VIS-009", "BL-INT-005", "BL-INT-006", "BL-INT-007"]
+    },
+    {
+      "id": "form.groups-source-list-basic",
+      "family": "form",
+      "templateIds": ["form.grouped-page"],
+      "evidence": "manual-business",
+      "capabilities": ["form.groups", "form.stickyActions", "form.returnSource", "form.resultSummary", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.refresh", "table.columnSettings"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-007", "BL-TPL-012", "BL-TPL-021", "BL-INT-005", "BL-INT-006", "BL-INT-017"]
+    },
+    {
       "id": "form.steps-source-list-basic",
       "family": "form",
       "templateIds": ["form.staged-flow"],
@@ -238,6 +263,22 @@
       "evidence": "manual-business",
       "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.sideGuide", "form.upload", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.resultFeedback", "form.sourceList", "query.advanced", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder"],
       "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-006", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-007", "BL-INT-010", "BL-INT-017"]
+    },
+    {
+      "id": "form.steps-grouped-source-list-basic",
+      "family": "form",
+      "templateIds": ["form.staged-grouped-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.sideGuide", "form.upload", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.resultFeedback", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder", "form.stepGroups"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-006", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-VIS-009", "BL-VIS-019", "BL-INT-004", "BL-INT-005", "BL-INT-006", "BL-INT-007", "BL-INT-010", "BL-INT-017"]
+    },
+    {
+      "id": "form.steps-grouped-source-list-advanced",
+      "family": "form",
+      "templateIds": ["form.staged-grouped-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.sideGuide", "form.upload", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.resultFeedback", "form.sourceList", "query.advanced", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder", "form.stepGroups"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-006", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-VIS-009", "BL-VIS-019", "BL-INT-004", "BL-INT-005", "BL-INT-006", "BL-INT-007", "BL-INT-010", "BL-INT-017"]
     },
     {
       "id": "form.page-source-list-basic",

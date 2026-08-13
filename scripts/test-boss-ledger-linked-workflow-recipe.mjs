@@ -26,6 +26,17 @@ const pageFormChangeArg = `changes/${pageFormChangeId}`;
 const pageFormChangeDir = resolve(root, pageFormChangeArg);
 const pageFormRequest = '创建老板管账的商户查询列表页面。查询条件：商户名称、商户编号、商户状态。列表字段：商户编号、商户名称、商户状态、创建时间。点击新增商户，使用全页表单填写商户名称、商户编号、商户状态，提交后返回列表查看。';
 const colonPrefixedRequest = request.replace('创建老板管账的分账规则查询列表页面。', '老板管账：创建一个分账查询页面。');
+const groupedRequest = `生成一个“商户结算账户开通管理”页面。
+
+页面首页为开通申请查询列表，查询条件：申请日期、商户名称、申请状态、结算主体。列表字段：申请单号、商户名称、结算主体、收款账户、申请时间、申请状态。右上角提供“新建申请”按钮。
+
+点击“新建申请”后，在新标签页打开全页录入流程，顶部常驻三步步骤条：
+
+第一步：分为“商户基本信息”和“经营资质信息”两个分组，填写商户名称、统一社会信用代码、经营地址、联系人、营业执照、法人信息。
+第二步：分为“收款账户信息”和“结算规则”两个分组，填写开户名称、开户银行、银行卡号、账户类型、结算周期、手续费承担方、到账通知方式。
+第三步：分为“材料复核”和“提交确认”两个分组，核验营业执照、法人身份、银行卡材料，并确认协议与风险提示后提交。
+
+支持保存草稿、上一步、下一步和提交申请；关闭录入标签后保留原查询列表的筛选和分页状态。`;
 
 try {
   const decision = classifyBossLedgerGeneration(request);
@@ -39,6 +50,15 @@ try {
   if (colonPrefixedSpec.metadata.pageName !== '分账查询') throw new Error(`Colon-prefixed title is invalid: ${colonPrefixedSpec.metadata.pageName}`);
   if (!spec.form.sourceList || spec.form.sourceList.table.primaryAction?.workflowTarget !== 'form') throw new Error('Source-list create action was not linked to the full-page workflow.');
   if (spec.form.submit.success.actionType !== 'return-source' || !spec.content.capabilities.includes('form.sourceList')) throw new Error('Workflow result does not return to its source list.');
+  const groupedDecision = classifyBossLedgerGeneration(groupedRequest);
+  if (groupedDecision.status !== 'fast' || groupedDecision.recipe !== 'linked-list-wizard' || groupedDecision.route.template !== 'form.staged-grouped-flow') throw new Error('Linked grouped workflow request did not select the grouped workflow recipe.');
+  const groupedSpec = compileLinkedListWizard({ rawRequest: groupedRequest, changeId });
+  const groupedErrors = validatePageSpec(groupedSpec, { root });
+  if (groupedErrors.length) throw new Error(`Linked grouped workflow Page Spec is invalid: ${groupedErrors.join('; ')}`);
+  if (groupedSpec.metadata.templateId !== 'form.staged-grouped-flow' || groupedSpec.metadata.validatedCombinations[0] !== 'form.steps-grouped-source-list-basic') throw new Error('Linked grouped workflow did not declare the verified grouped source-list combination.');
+  if (!groupedSpec.form.sourceList || groupedSpec.form.sourceList.table.primaryAction?.workflowTarget !== 'form') throw new Error('Grouped workflow source-list create action was not linked to the full-page workflow.');
+  if (groupedSpec.form.steps.length !== 3 || groupedSpec.form.steps.some((step) => !Array.isArray(step.groups) || step.groups.length !== 2)) throw new Error('Grouped workflow did not preserve three steps with two business groups each.');
+  if (!groupedSpec.content.capabilities.includes('form.stepGroups') || groupedSpec.form.submit.success.actionType !== 'return-source') throw new Error('Grouped workflow is missing grouped-step or source-return capabilities.');
   const pageFormDecision = classifyBossLedgerGeneration(pageFormRequest);
   if (pageFormDecision.status !== 'fast' || pageFormDecision.recipe !== 'linked-list-page-form') throw new Error('Linked list-to-page-form request did not select the workflow recipe.');
   const pageForm = compileLinkedListPageForm({ rawRequest: pageFormRequest, changeId });

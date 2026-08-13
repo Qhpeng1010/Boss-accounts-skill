@@ -4,6 +4,7 @@ const CHINESE_NUMBERS = new Map([
 ]);
 
 const RULE_REFS = ['BL-TPL-003', 'BL-TPL-006', 'BL-TPL-007', 'BL-TPL-021', 'BL-VIS-021', 'BL-INT-005', 'BL-INT-006', 'BL-INT-007', 'BL-INT-017'];
+const GROUPED_RULE_REFS = ['BL-TPL-003', 'BL-TPL-005', 'BL-TPL-006', 'BL-TPL-007', 'BL-TPL-008', 'BL-TPL-021', 'BL-VIS-009', 'BL-VIS-019', 'BL-VIS-021', 'BL-VIS-022', 'BL-INT-005', 'BL-INT-006', 'BL-INT-007', 'BL-INT-017'];
 
 const SELECT_OPTIONS = {
   '规则类型': [['按比例分账', 'ratio'], ['按固定金额分账', 'fixed']],
@@ -24,9 +25,74 @@ function parseStepNumber(value) {
 function fieldsFrom(text) {
   return text
     .replace(/[。；;]+$/g, '')
-    .split(/[、，,；;]/)
-    .map((field) => field.replace(/^(?:填写|配置|设置)/, '').trim())
+    .split(/[、，,；;]|(?:并)?(?:和|与)/)
+    .map((field) => field
+      .replace(/^(?:并)?(?:填写|配置|设置|核验|确认)/, '')
+      .replace(/(?:等|后提交|并提交|提交)$/g, '')
+      .trim())
     .filter(Boolean);
+}
+
+function fieldKey(stepIndex, groupIndex, fieldIndex) {
+  return `step${stepIndex}Group${groupIndex + 1}Field${fieldIndex + 1}`;
+}
+
+function groupMatchScore(title, label) {
+  const rules = [
+    [/基本|主体|商户/, /商户|名称|信用代码|地址|联系人|类型|编号/],
+    [/资质|法人|证件|经营/, /营业执照|法人|证件|有效期|经营|行业|类目/],
+    [/账户|收款|银行/, /开户|银行|账号|账户|银行卡/],
+    [/规则|结算/, /结算|周期|金额|手续费|承担|对账|通知|到账/],
+    [/材料|复核|核验/, /核验|营业执照|法人|身份|银行卡|材料/],
+    [/确认|提交|协议/, /确认|协议|风险|提示|备注/]
+  ];
+  let score = rules.reduce((total, [titlePattern, fieldPattern]) => total + (titlePattern.test(title) && fieldPattern.test(label) ? 4 : 0), 0);
+  for (const character of new Set([...title.replace(/信息|配置|基本|提交/g, '')])) {
+    if (label.includes(character)) score += 1;
+  }
+  return score;
+}
+
+function distributeGroupedFields(titles, labels) {
+  const assigned = titles.map(() => []);
+  labels.forEach((label) => {
+    const scores = titles.map((title) => groupMatchScore(title, label));
+    const bestScore = Math.max(...scores);
+    const candidates = scores.map((score, index) => score === bestScore ? index : -1).filter((index) => index >= 0);
+    const target = candidates.sort((left, right) => assigned[left].length - assigned[right].length)[0];
+    assigned[target].push(label);
+  });
+  assigned.forEach((fields, emptyIndex) => {
+    if (fields.length) return;
+    const donorIndex = assigned.findIndex((candidate) => candidate.length > 1);
+    if (donorIndex >= 0) fields.push(assigned[donorIndex].pop());
+    else throw new Error(`“${titles[emptyIndex]}”分组没有可生成的字段。`);
+  });
+  return assigned;
+}
+
+function parseGroupedStep(step) {
+  const declaration = step.content.match(/分为\s*[“"]([^”"]+)[”"]\s*(?:和|与|、)\s*[“"]([^”"]+)[”"]\s*(?:两个|2\s*个)分组[，,:：]?\s*(?:填写|包括|核验)?\s*([\s\S]*)$/);
+  if (!declaration) throw new Error(`第${step.index}步需要使用“分为‘分组一’和‘分组二’两个分组，填写……”声明分组与字段。`);
+  const titles = [declaration[1].trim(), declaration[2].trim()];
+  const labels = fieldsFrom(declaration[3]);
+  if (labels.length < titles.length) throw new Error(`第${step.index}步的字段数量不足以填充 ${titles.length} 个业务分组。`);
+  const distributed = distributeGroupedFields(titles, labels);
+  return {
+    key: `step${step.index}`,
+    title: titles.join('与'),
+    description: `填写并核对${titles.join('、')}。`,
+    groups: titles.map((title, groupIndex) => ({
+      key: `step${step.index}Group${groupIndex + 1}`,
+      title,
+      fields: distributed[groupIndex].map((label, fieldIndex) => ({
+        key: fieldKey(step.index, groupIndex, fieldIndex),
+        label,
+        required: true,
+        ...fieldControl(label)
+      }))
+    }))
+  };
 }
 
 function fieldControl(label) {
@@ -107,6 +173,34 @@ export function parseStructuredWizardRequest(rawRequest) {
   };
 }
 
+export function parseStructuredGroupedWizardRequest(rawRequest) {
+  const request = normalize(rawRequest);
+  if (!request) throw new Error('缺少业务需求。');
+  const matches = [...request.matchAll(/第([一二三四五六七八九十\d]+)步\s*[：:]\s*([\s\S]*?)(?=(?:第[一二三四五六七八九十\d]+步\s*[：:]|落地页|要求\s*[：:]|$))/g)];
+  if (matches.length < 2) throw new Error('仅支持至少两个带“第 N 步：”结构的流程需求。');
+  const blocks = matches.map((match) => ({ index: parseStepNumber(match[1]), content: normalize(match[2]) }));
+  if (blocks.some((step) => !Number.isInteger(step.index)) || blocks.some((step, index) => step.index !== index + 1)) {
+    throw new Error('步骤必须从“第一步”开始连续编号。');
+  }
+  const declaredCount = request.match(/(?:分为|共)\s*([一二三四五六七八九十\d]+)\s*步/);
+  if (declaredCount && parseStepNumber(declaredCount[1]) !== blocks.length) {
+    throw new Error('声明的步骤数量与实际编号步骤数量不一致。');
+  }
+  const steps = blocks.map((block) => {
+    const standaloneReview = /^(?:预览|复核|确认)(?:页面|全部|信息|并提交|后提交)?[。；]?$/.test(block.content);
+    return standaloneReview
+      ? { key: 'review', title: '预览并提交', description: '请核对全部信息，确认无误后提交。', review: true }
+      : parseGroupedStep(block);
+  });
+  return {
+    request,
+    pageName: pageNameFrom(request),
+    steps,
+    returnsToSource: /返回列表|返回.*查询|回到列表|保留原查询列表/.test(request),
+    continueCreate: /继续新增|继续创建/.test(request)
+  };
+}
+
 export function compileStructuredWizard({ rawRequest, changeId }) {
   const parsed = parseStructuredWizardRequest(rawRequest);
   const capabilities = ['form.steps', 'form.review', 'form.stickyActions'];
@@ -159,6 +253,46 @@ export function compileStructuredWizard({ rawRequest, changeId }) {
           description: '请确认流程信息填写无误后提交。'
         },
         success
+      }
+    }
+  };
+}
+
+export function compileStructuredGroupedWizard({ rawRequest, changeId }) {
+  const parsed = parseStructuredGroupedWizardRequest(rawRequest);
+  return {
+    schemaVersion: 1,
+    ui: { system: 'boss-ledger', runtime: 'react-antd-page-spec', rendererVersion: 1 },
+    metadata: {
+      changeId,
+      pageName: parsed.pageName,
+      family: 'form',
+      templateId: 'form.staged-grouped-flow',
+      executionMode: 'shadow',
+      validatedCombinations: ['form.steps-grouped'],
+      request: parsed.request,
+      selectionReason: `${parsed.pageName}按步骤推进，且每个填写步骤包含多个需分别核对的业务信息组。`,
+      assumptions: [
+        '当前为客户端交互原型，不调用真实业务服务。',
+        '需求未给出的下拉选项使用流程配方中的默认业务选项。',
+        '未单独声明可选性的字段按必填处理。'
+      ],
+      ruleRefs: GROUPED_RULE_REFS
+    },
+    shell: { activePrimaryKey: 'workspace' },
+    content: { capabilities: ['form.groups', 'form.steps', 'form.stepGroups', 'form.stickyActions', 'form.review'] },
+    form: {
+      presentation: 'page',
+      steps: parsed.steps,
+      stickyActions: true,
+      submit: {
+        primaryLabel: '提交',
+        confirm: { title: `确认提交${parsed.pageName}`, description: '请确认各步骤业务信息均已核对无误后提交。' },
+        success: {
+          title: `${parsed.pageName}完成`,
+          message: `${parsed.pageName}已提交完成。`,
+          ...(parsed.returnsToSource ? { actionType: 'return-source', actionLabel: '返回列表查看' } : { actionType: 'reset', actionLabel: '继续配置' })
+        }
       }
     }
   };

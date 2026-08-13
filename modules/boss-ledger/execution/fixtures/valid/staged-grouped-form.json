@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "changeId": "20260813-staged-grouped-form-fixture",
+    "pageName": "商户入驻申请",
+    "family": "form",
+    "templateId": "form.staged-grouped-flow",
+    "executionMode": "shadow",
+    "validatedCombinations": ["form.steps-grouped-upload"],
+    "request": "运营人员按步骤填写商户信息；每个填写步骤有多个业务组，最后复核并提交审核。",
+    "selectionReason": "申请按阶段推进，且每个填写阶段都有多个需分别核对的业务信息组，使用步骤条加分组全页表单。",
+    "assumptions": ["预览仅验证客户端校验、步骤推进和成功反馈，不调用真实 OCR 或审核服务。"],
+    "ruleRefs": ["BL-TPL-003", "BL-TPL-005", "BL-TPL-006", "BL-TPL-007", "BL-TPL-008", "BL-VIS-009", "BL-VIS-019", "BL-VIS-022", "BL-INT-005", "BL-INT-006", "BL-INT-007"]
+  },
+  "ui": { "system": "boss-ledger", "runtime": "react-antd-page-spec", "rendererVersion": 1 },
+  "content": { "capabilities": ["form.groups", "form.steps", "form.stepGroups", "form.stickyActions", "form.review", "form.upload"] },
+  "form": {
+    "presentation": "page",
+    "stickyActions": true,
+    "steps": [
+      {
+        "key": "merchant",
+        "title": "商户信息",
+        "description": "填写商户主体和经营信息。",
+        "groups": [
+          {
+            "key": "merchant-basic",
+            "title": "商户信息",
+            "fields": [
+              { "key": "merchantType", "label": "商户类型", "control": "select", "required": true, "options": [{ "label": "企业商户", "value": "enterprise" }, { "label": "个体商户", "value": "individual" }] },
+              { "key": "license", "label": "商户营业执照", "control": "upload", "required": true, "accept": ".jpg,.jpeg,.png,.bmp", "uploadLabel": "上传营业执照" },
+              { "key": "merchantName", "label": "商户名称", "control": "input", "required": true },
+              { "key": "merchantShortName", "label": "商户简称", "control": "input", "required": true }
+            ]
+          },
+          {
+            "key": "merchant-operation",
+            "title": "经营信息",
+            "fields": [
+              { "key": "industry", "label": "经营类目", "control": "select", "required": true, "options": [{ "label": "零售", "value": "retail" }, { "label": "餐饮", "value": "food" }] },
+              { "key": "region", "label": "经营地址", "control": "cascader", "required": true, "options": [{ "label": "浙江省", "value": "zhejiang", "children": [{ "label": "杭州市", "value": "hangzhou" }] }] },
+              { "key": "address", "label": "详细地址", "control": "input", "required": true },
+              { "key": "businessHours", "label": "营业时间", "control": "input", "required": true }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "legal",
+        "title": "法人信息",
+        "description": "上传法人证件并核对身份信息。",
+        "groups": [
+          {
+            "key": "legal-card",
+            "title": "法人证件",
+            "fields": [
+              { "key": "idFront", "label": "法人证件人像面", "control": "upload", "required": true, "accept": ".jpg,.jpeg,.png,.bmp", "uploadLabel": "上传人像面" },
+              { "key": "idBack", "label": "法人证件国徽面", "control": "upload", "required": true, "accept": ".jpg,.jpeg,.png,.bmp", "uploadLabel": "上传国徽面" },
+              { "key": "legalIdType", "label": "证件类型", "control": "select", "required": true, "options": [{ "label": "居民身份证", "value": "id-card" }] },
+              { "key": "idIssueAuthority", "label": "签发机关", "control": "input", "required": true }
+            ]
+          },
+          {
+            "key": "legal-basic",
+            "title": "法人基本信息",
+            "fields": [
+              { "key": "legalName", "label": "法人姓名", "control": "input", "required": true },
+              { "key": "idNo", "label": "证件号码", "control": "input", "required": true, "pattern": "^[0-9Xx]{18}$", "patternMessage": "请输入 18 位证件号码" },
+              { "key": "idValidPeriod", "label": "证件有效期", "control": "date-range", "required": true },
+              { "key": "legalMobile", "label": "法人手机号", "control": "input", "required": true }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "settlement",
+        "title": "结算信息",
+        "description": "填写结算账户和结算方式。",
+        "groups": [
+          {
+            "key": "settlement-account",
+            "title": "结算账户",
+            "fields": [
+              { "key": "accountName", "label": "账户名称", "control": "input", "required": true },
+              { "key": "accountNo", "label": "结算账号", "control": "input", "required": true },
+              { "key": "bankName", "label": "开户银行", "control": "input", "required": true },
+              { "key": "bankBranch", "label": "开户支行", "control": "input", "required": true }
+            ]
+          },
+          {
+            "key": "settlement-rule",
+            "title": "结算配置",
+            "fields": [
+              { "key": "settlementCycle", "label": "结算周期", "control": "select", "required": true, "options": [{ "label": "T+1", "value": "t1" }, { "label": "T+7", "value": "t7" }] },
+              { "key": "contactPhone", "label": "结算联系人电话", "control": "input", "required": true },
+              { "key": "settlementType", "label": "结算方式", "control": "select", "required": true, "options": [{ "label": "自动结算", "value": "auto" }, { "label": "手动结算", "value": "manual" }] },
+              { "key": "settlementEmail", "label": "结算通知邮箱", "control": "input", "required": true }
+            ]
+          }
+        ]
+      },
+      { "key": "review", "title": "提交审核", "description": "核对申请信息后提交审核。", "review": true }
+    ],
+    "submit": {
+      "primaryLabel": "提交审核",
+      "cancelLabel": "取 消",
+      "confirm": { "title": "确认提交商户入驻申请", "description": "请确认商户及法人信息准确无误后提交审核。" },
+      "success": { "title": "提交成功", "message": "商户入驻申请已提交审核。", "actionLabel": "继续申请" }
+    }
+  }
+}
