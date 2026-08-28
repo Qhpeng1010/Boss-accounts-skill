@@ -1,8 +1,17 @@
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, linkSync, lstatSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export const sharedRuntimeDirectory = (root) => resolve(root, 'modules/shared/browser-runtime/vendor');
+export const sharedRuntimeDependencies = Object.freeze([
+  '@ant-design/charts',
+  '@ant-design/icons',
+  'antd',
+  'dayjs',
+  'lodash',
+  'react',
+  'react-dom'
+]);
 
 export function pageNeedsCharts(spec) {
   return spec?.metadata?.family === 'dashboard' && Array.isArray(spec?.dashboard?.charts) && spec.dashboard.charts.length > 0;
@@ -36,7 +45,21 @@ export function assertSharedBrowserRuntime(root, spec) {
   return manifest;
 }
 
-export function installPageVendor(root, changeDir, spec) {
+function installRuntimeFile(source, target, portable) {
+  if (portable) {
+    cpSync(source, target);
+    return;
+  }
+  try {
+    linkSync(source, target);
+  } catch (error) {
+    const unsupported = new Set(['EACCES', 'ENOSYS', 'ENOTSUP', 'EPERM', 'EXDEV']);
+    if (!unsupported.has(error?.code)) throw error;
+    cpSync(source, target);
+  }
+}
+
+export function installPageVendor(root, changeDir, spec, { portable = false } = {}) {
   assertSharedBrowserRuntime(root, spec);
   const source = sharedRuntimeDirectory(root);
   const target = resolve(changeDir, 'vendor');
@@ -51,8 +74,14 @@ export function installPageVendor(root, changeDir, spec) {
   }
   if (targetExists) rmSync(target, { recursive: true, force: true });
   mkdirSync(target, { recursive: true });
-  for (const name of runtimeFilesForSpec(root, spec)) cpSync(resolve(source, name), resolve(target, name));
-  cpSync(resolve(source, 'runtime-manifest.json'), resolve(target, 'runtime-manifest.json'));
+  for (const name of runtimeFilesForSpec(root, spec)) {
+    installRuntimeFile(resolve(source, name), resolve(target, name), portable);
+  }
+  installRuntimeFile(
+    resolve(source, 'runtime-manifest.json'),
+    resolve(target, 'runtime-manifest.json'),
+    portable
+  );
 }
 
 export function verifyPageVendor(root, changeDir, spec) {

@@ -121,11 +121,13 @@ changes/YYYYMMDD-功能名称/
 └── review.md                 静态预检结果与人工验收记录
 ```
 
-构建会将所需浏览器依赖写入 Change 的 `vendor/` 目录，因此交付目录不依赖本工程内的软链接，移动后仍可打开 `preview.html` 评审。
+构建默认通过硬链接将所需浏览器依赖写入 Change 的 `vendor/` 目录，避免历史页面重复占用磁盘；需要完全独立的交付副本时增加 `--portable`，移动后仍可打开 `preview.html` 评审。
 
 ## 依赖与重建
 
 React、ReactDOM、Ant Design、Ant Design Icons、Day.js、Lodash 与 Ant Design Charts 的版本由根目录 `package.json` 和 `package-lock.json` 锁定。重新安装并生成浏览器运行时：
+
+日常页面生成直接使用仓库内已构建的浏览器运行时，不需要安装 `node_modules`。只有升级前端依赖、调整图标集合、修改运行库构建逻辑或发布 Skill 时，才需要执行以下维护命令：
 
 ```bash
 npm ci

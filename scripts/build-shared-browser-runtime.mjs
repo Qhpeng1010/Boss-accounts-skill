@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import { build } from 'esbuild';
+import { sharedRuntimeDependencies } from './lib/shared-browser-runtime.mjs';
 
 const root = process.cwd();
 const require = createRequire(import.meta.url);
@@ -90,8 +91,9 @@ async function main() {
   const icons = await buildIcons();
 
   const files = readdirSync(outputDir).filter((name) => statSync(resolve(outputDir, name)).isFile()).sort();
-  const declared = { ...packageJson.dependencies, ...packageJson.devDependencies };
-  const dependencies = Object.fromEntries(Object.keys(declared).sort().map((name) => {
+  const declared = packageJson.devDependencies || {};
+  const dependencies = Object.fromEntries(sharedRuntimeDependencies.map((name) => {
+    if (!declared[name]) throw new Error(`${name} is missing from package.json`);
     const installed = JSON.parse(readFileSync(resolve(packageRoot(name), 'package.json'), 'utf8')).version;
     if (installed !== declared[name]) throw new Error(`${name} installed version ${installed} does not match package.json ${declared[name]}`);
     return [name, installed];

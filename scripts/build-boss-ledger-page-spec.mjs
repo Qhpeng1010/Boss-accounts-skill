@@ -19,8 +19,9 @@ import { installPageVendor, renderBossLedgerPreview } from './lib/shared-browser
 
 const specArg = process.argv.find((arg) => arg.endsWith('page-spec.json'));
 const flexible = process.argv.includes('--flexible');
+const portable = process.argv.includes('--portable') || process.argv.includes('--materialize-vendor');
 if (!specArg) {
-  console.error('Usage: node scripts/build-boss-ledger-page-spec.mjs changes/{change-id}/page-spec.json');
+  console.error('Usage: node scripts/build-boss-ledger-page-spec.mjs changes/{change-id}/page-spec.json [--portable]');
   process.exit(2);
 }
 
@@ -94,8 +95,7 @@ try {
   const previewPath = resolve(changeDir, 'preview.html');
   const previewTemplate = readFileSync(resolve(rendererRoot, 'page-spec-preview.template.html'), 'utf8');
   writeFileSync(previewPath, renderBossLedgerPreview(previewTemplate, spec));
-  // Each delivery owns its browser runtime so it can move independently.
-  installPageVendor(root, changeDir, spec);
+  installPageVendor(root, changeDir, spec, { portable });
 
   const appPath = resolve(changeDir, 'preview-app.js');
   writeFileSync(appPath, generatedPreviewApp(spec));

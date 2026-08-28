@@ -6,8 +6,8 @@ The shell owns the top information bar, primary navigation, left Ant Design Menu
 
 浏览器依赖由根目录 `package.json` 锁定，并通过 `npm run build:runtime` 生成到
 `modules/shared/browser-runtime/vendor/`。老板管账与易账通共用这套离线运行时，
-Shell 不再维护第三方压缩源码。普通预览使用软链接；页面构建命令加 `--portable`
-时才复制当前页面所需的运行文件。
+Shell 不再维护第三方压缩源码。普通预览使用硬链接复用共享浏览器依赖；页面构建
+命令加 `--portable` 时复制当前页面所需的独立运行文件。
 
 `lodash.min.js` 和 `ant-design-charts.min.js` 只在 Dashboard 页面写入预览 HTML。
 列表、表单、详情与结果页不会加载图表依赖。Ant Design 图标包也只包含固定 Shell
