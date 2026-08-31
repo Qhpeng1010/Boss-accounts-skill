@@ -8,7 +8,7 @@
   "rendererVersion": 1,
   "shellVersion": 1,
   "hashes": {
-    "AGENTS.md": "8deabae61b55732e19bc090ead0dc959fc384526fe67d1ed2bd311d90e92c8c5",
+    "AGENTS.md": "859c0fe67c15cbd59623c164d7f25e3aa44eba5ce68d95b78e63b128b9b51a27",
     "SKILL.md": "851dd1b91e4b2af8d1d3e0b94fc4b81bb992ac72dc50f806aacddbb99e5de79a",
     "README.md": "e07a6d7764d48fda72e3565632d294fefd130494cb50dca837447f22aea94342",
     "agents/openai.yaml": "e1921e4fee63e6270cb282112f061771e74844cfc325556a09e62470fa29970b",
