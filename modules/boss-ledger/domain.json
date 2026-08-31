@@ -1,6 +1,15 @@
 {
   "version": 1,
   "module": "boss-ledger",
+  "serviceId": "boss-ledger",
+  "designMcp": {
+    "contextPackTool": "design_get_context_pack",
+    "ruleTool": "design_get_rule",
+    "templateListTool": "design_list_templates",
+    "themeTokensTool": "design_get_theme_tokens",
+    "acceptanceScenariosTool": "design_get_acceptance_scenarios",
+    "verificationTool": "knowledge_check_verification"
+  },
   "implementationMode": "markdown-spec-shell",
   "adapter": {
     "execution": {

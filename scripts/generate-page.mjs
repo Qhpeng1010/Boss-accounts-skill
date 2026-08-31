@@ -21,6 +21,7 @@ function print(result) {
 function routeSummary(route) {
   return {
     module: route.module,
+    serviceId: route.module,
     intent: route.intent,
     pageType: route.pageType,
     template: route.template,
