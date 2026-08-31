@@ -12,7 +12,7 @@
 node scripts/generate-page.mjs --request "<老板管账页面需求>"
 ```
 
-仅在明确使用 `/yeepay:fast` 时追加 `--recipe auto`。统一入口会在一次调用中返回页面方案、所需规则资源和后续命令；不要再次路由或重新执行入口来获取上下文。
+仅在明确使用 `/yeepay:fast` 时追加 `--recipe auto`。统一入口会在一次调用中返回页面方案、路由元数据和后续命令；不要再次路由或重新执行入口来获取上下文。生成前必须通过 Design MCP 读取最小上下文并验证采信的知识包，不得回退读取仓库内的旧知识副本。
 
 例如：
 
@@ -33,7 +33,7 @@ node scripts/generate-page.mjs --request "<老板管账页面需求>"
 ```text
 业务需求
   -> 统一入口识别页面意图和可用能力
-  -> 读取返回的导演规则、业务规则与精简上下文
+  -> 通过 Design MCP 读取并验证最小上下文
   -> 填写 page-spec.json
   -> 固定渲染器生成预览
   -> 需求覆盖、规格契约与静态预检
@@ -43,7 +43,8 @@ node scripts/generate-page.mjs --request "<老板管账页面需求>"
 
 入口返回的状态含义如下：
 
-- `natural-generation`：按返回的资源和命令完成 Change 的规格、构建与静态预检。
+- `natural-generation`：使用已验证的 Design MCP 上下文和返回的本地命令完成 Change 的规格、构建与静态预检。
+- `awaiting-mcp`：快速配方已完成分类，但必须先完成 Design MCP 上下文读取和知识包验证，再执行返回的快速命令。
 - `generated`：快速配方已生成页面、完成构建和静态预检，无需重复构建。
 - `clarify`：仅补充返回的业务问题。
 - `blocked`：缺少可执行的规格、渲染器或基础设施，需要补齐实际能力。
@@ -71,7 +72,7 @@ boss-accounts-skill/
 
 ## 老板管账规则
 
-[导演规则](modules/boss-ledger/director-rules/README.md)是设计决策的唯一入口，分为三部分：
+[导演规则](modules/boss-ledger/director-rules/README.md)是本地执行资产的维护源，不是页面生成时的知识入口。页面生成必须使用已验证的 Design MCP 上下文；这些本地文件仅用于维护现有策略、编译产物和静态校验，不能在 MCP 不可用时作为回退知识副本。维护内容分为三部分：
 
 1. `01-visual-constitution.md`：全局视觉气质、色彩、字体、密度、圆角和组件原则。
 2. `02-template-application-rules.md`：页面家族的选择条件、组合方式和禁用组合。

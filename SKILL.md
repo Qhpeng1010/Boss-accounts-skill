@@ -70,7 +70,8 @@ Always keep these local and unchanged: `generation-policy`, Page Spec schema, sc
 
 2. Handle the returned status:
    - `natural-generation`: Use only the verified MCP context and route metadata. Write the Change artifacts, then run the returned local coverage, contract, build, and static-preflight commands in order.
-   - `generated`: The fast recipe has already generated, built, and statically checked the Change after the MCP gate. Do not reroute or rebuild it.
+   - `awaiting-mcp`: The fast recipe has only been classified. After the MCP context and all package verifications succeed, execute the returned `commands.fast` exactly once. That command carries the original single-route context and returns `generated`; do not reroute.
+   - `generated`: The fast recipe has generated, built, and statically checked the Change after the MCP gate. Do not reroute or rebuild it.
    - `clarify`: Ask only the returned business question.
    - `blocked`: Report the real missing specification, renderer, infrastructure, or MCP condition.
 

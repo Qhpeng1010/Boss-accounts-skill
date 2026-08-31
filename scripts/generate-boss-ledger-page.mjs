@@ -15,6 +15,20 @@ function arg(name) {
   return index >= 0 ? args[index + 1] : '';
 }
 
+function decodeRouteContext(value, request) {
+  if (!value) return null;
+  let context;
+  try {
+    context = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
+  } catch (error) {
+    throw new Error(`快速生成的路由上下文无效：${error.message}`);
+  }
+  if (context.request !== request || context.route?.status !== 'resolved') {
+    throw new Error('快速生成的路由上下文与原始需求不一致。');
+  }
+  return context.route;
+}
+
 function todayShanghai() {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Shanghai',
@@ -152,9 +166,13 @@ function main() {
   const request = arg('--request');
   const requestedChange = arg('--change');
   const json = args.includes('--json');
-  if (!request) throw new Error('Usage: node scripts/generate-boss-ledger-page.mjs --request "<业务需求>" [--change changes/<change-id>] [--json]');
+  const mcpVerified = args.includes('--mcp-verified');
+  const route = decodeRouteContext(arg('--route-context'), request);
+  if (!request || !mcpVerified || !route) {
+    throw new Error('Usage: node scripts/generate-boss-ledger-page.mjs --request "<业务需求>" --route-context <encoded-route> --mcp-verified [--change changes/<change-id>] [--json]');
+  }
 
-  print(generateBossLedgerPage({ request, requestedChange }), json);
+  print(generateBossLedgerPage({ request, requestedChange, route }), json);
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

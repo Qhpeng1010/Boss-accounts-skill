@@ -8,9 +8,9 @@
   "rendererVersion": 1,
   "shellVersion": 1,
   "hashes": {
-    "AGENTS.md": "859c0fe67c15cbd59623c164d7f25e3aa44eba5ce68d95b78e63b128b9b51a27",
-    "SKILL.md": "851dd1b91e4b2af8d1d3e0b94fc4b81bb992ac72dc50f806aacddbb99e5de79a",
-    "README.md": "e07a6d7764d48fda72e3565632d294fefd130494cb50dca837447f22aea94342",
+    "AGENTS.md": "8ca4a1bde9d1a0402d92b1c625b98f43437c7037eae2cd729dedaff7ec57946d",
+    "SKILL.md": "854b67004953d724f6a373591d680e7c43c2cfe6a4b4cfc8d3f134643a14712b",
+    "README.md": "7ef69500afcffdfb55edbd6030e24b5e2b3baf7d3f49386a669b37b13f89071a",
     "agents/openai.yaml": "e1921e4fee63e6270cb282112f061771e74844cfc325556a09e62470fa29970b",
     "package.json": "928e86a62516eb61a6963adf6d1570e1087b6986a38ed123f73c7a4c3a980f7a",
     "package-lock.json": "505b827a5f39f40eed11ca9cdd95b4b35e3b3cdc7b2b9fc81f9e2727321a6f51",
@@ -64,13 +64,13 @@
     "scripts/check-boss-ledger-generation-policy.mjs": "ec705a986cb21579518448050eec9e826c3cf735dbf2ca3f39d9215ebfd0f422",
     "scripts/check-boss-accounts-skill-integrity.mjs": "7e824e63e931be25e93ac8464354393897c99736196b461f55092bb8aeebca1c",
     "scripts/resolve-resources.mjs": "f9054506a910816b503c148ce15917398860753c443c7eb415a5b08babdbdce5",
-    "scripts/lib/boss-ledger-generation-entry.mjs": "2b34b2ec022e6967700d874d8ee72b2e0286f5fd85d20a291ee2843cbf413298",
+    "scripts/lib/boss-ledger-generation-entry.mjs": "e15c427dc1508b84c3aa49997852530d38ed8a9f3884e9ff71bff628bb9cb4fb",
     "scripts/lib/recipe-request-bridge.mjs": "c864ec471467da4bfea9418828147e3b586bd6ff54e7054bd5dbcac4db1130d1",
     "scripts/lib/recipe-route-context.mjs": "577b887ce25867c9c6b41fa5eabbd07f15d4223ed6d86e9b2bdb266d00a8c24a",
     "scripts/lib/generation-performance.mjs": "42fd6c388607593b606f13289f33256d71a5f0176ee8ce7b83c6db4044a0b333",
     "scripts/lib/boss-ledger-list-workbench-recipe.mjs": "87fb1671ef0ea99bb73b44403cd8495cd7f4815873b5f3c3f08031a74aa94a17",
-    "scripts/generate-boss-ledger-page.mjs": "98a73e2c1c253dc7a2392e40c4dec2fd918cae71203e31428a5e2dbb54d3f132",
-    "scripts/test-boss-ledger-generation-entry.mjs": "21ba9e1e51fd7e11c11878bf9a6f2d4679eef1fb563bc1f777aec53077ace555",
+    "scripts/generate-boss-ledger-page.mjs": "85f8eaee1cd0fac1e7954e33591f147a874aafdcd464b4480550f2d8d6d144e0",
+    "scripts/test-boss-ledger-generation-entry.mjs": "305e45840604bc72282cb1fc1bb83fb7cab9bc786f0afa6add9c14c4a4ea6b42",
     "scripts/compile-boss-ledger-list-workbench-recipe.mjs": "afd8cefbf51a4f2bb95e83a5d47a95d8fb2aef750e3f8237114ec60de732168b",
     "scripts/test-boss-ledger-list-workbench-recipe.mjs": "dad05326ef68c849a97653a17140e33efd858e1adda51b310497ddc119d23e72",
     "scripts/lib/boss-ledger-wizard-recipe.mjs": "59e5e4017283ec9b2fa587db6222351ce18c981ae7e73ffa08636a2efacfa79b",
@@ -91,9 +91,9 @@
     "scripts/materialize-boss-ledger-capability-scenarios.mjs": "f83f416283bb666b3e7c7bdf96db61543b041a116e572f5b9b73e631dace1003",
     "scripts/verify-boss-ledger-capability-scenarios.mjs": "86f6499077abbfb9aec184ba8863fb08e2883eebf8605225366a8c5a3deb9137",
     "scripts/rebuild-boss-ledger-history.mjs": "6ac38c21b19bbde74e6a7c2307497efded0d715ec9319d3e3bf9390f5d809e2d",
-    "scripts/test-boss-ledger-portable-history.mjs": "a9cda708f13205299ece04e3bdc3018d1e796b42f8607813ed53b567b4164681",
+    "scripts/test-boss-ledger-portable-history.mjs": "df4b6d69707ee8670a5316cd5f53e1451f63fbbae431ad5be25793fbd068026c",
     "modules/boss-ledger/execution/scenarios/capability-scenarios.mjs": "1ea3d602fcbcb650a8322ebcf569e07afca473110d9a8906a345b418dfc6c6fc",
     "scripts/route-business.mjs": "9de11832b820e769138685f49c4373a48b259fc05c6e13bcadabef4a0da6c7cf",
-    "scripts/generate-page.mjs": "e53b01fffe69bfec93e0cdfbbf6d3dd8ad81b092542979d7e84541fb26ec79e8"
+    "scripts/generate-page.mjs": "f4cec078ca85f04299c3b2fc263c589eea56e4d926a71acefa2845585571f708"
   }
 }
