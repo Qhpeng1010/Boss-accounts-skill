@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolveResources } from './resolve-resources.mjs';
-import { generateBossLedgerPage } from './generate-boss-ledger-page.mjs';
+import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
 
 const args = process.argv.slice(2);
 const textOutput = args.includes('--text');
@@ -21,6 +21,7 @@ function print(result) {
 function routeSummary(route) {
   return {
     module: route.module,
+    serviceId: route.module,
     intent: route.intent,
     pageType: route.pageType,
     template: route.template,
@@ -42,6 +43,19 @@ function contextQuestion(route) {
     return '结果反馈必须依附业务流程，请补充它由哪个操作触发，以及完成后返回哪里。';
   }
   return null;
+}
+
+function shellQuote(value) {
+  return `'${String(value).replaceAll("'", "'\\''")}'`;
+}
+
+function encodeRouteContext(request, route) {
+  return Buffer.from(JSON.stringify({ request, route }), 'utf8').toString('base64url');
+}
+
+function fastCommand(request, route) {
+  const routeContext = encodeRouteContext(request, route);
+  return `node scripts/generate-boss-ledger-page.mjs --request ${shellQuote(request)} --route-context ${routeContext} --mcp-verified --json`;
 }
 
 function main() {
@@ -75,9 +89,26 @@ function main() {
   let recipeAttempt;
   const recipeUnavailable = recipeMode === 'auto' && route.execution?.availability !== 'available';
   if (recipeMode === 'auto' && !recipeUnavailable) {
-    recipeAttempt = generateBossLedgerPage({ request, route, timingContext: { startedAt: started, routeMs } });
-    if (recipeAttempt?.status === 'generated') {
-      return print({ ...recipeAttempt, route: routeSummary(route), reason: `${recipeAttempt.reason} 快速配方、构建和静态预检已在统一入口内完成。` });
+    recipeAttempt = classifyBossLedgerGeneration(request, { route });
+    if (recipeAttempt?.status === 'fast') {
+      const totalMs = Date.now() - started;
+      return print({
+        status: 'awaiting-mcp',
+        outcome: 'awaiting-mcp',
+        recipeName: recipeAttempt.recipe,
+        route: routeSummary(route),
+        routeContext: encodeRouteContext(request, route),
+        commands: { fast: fastCommand(request, route) },
+        mcp: {
+          status: 'pending',
+          contextTool: 'design_get_context_pack',
+          verificationTool: 'knowledge_check_verification',
+          next: '完成 MCP context pack 读取并验证所有采信知识包后，执行 commands.fast。'
+        },
+        timings: { routeMs, classifyMs: totalMs - routeMs, totalMs },
+        elapsedMs: totalMs,
+        reason: '已完成单次路由和快速配方识别；等待 Design MCP 上下文及知识包验证，验证通过后才能生成。'
+      });
     }
     if (recipeAttempt?.status === 'clarify' || recipeAttempt?.status === 'blocked') return print(recipeAttempt);
   }
@@ -99,7 +130,7 @@ function main() {
     ...(recipeAttempt ? { recipeAttempt: { status: recipeAttempt.status, reason: recipeAttempt.reason } } : {}),
     timings: { routeMs, ...(recipeAttempt?.timings?.classifyMs !== undefined ? { classifyMs: recipeAttempt.timings.classifyMs } : {}), totalMs },
     elapsedMs: totalMs,
-    reason: '已完成单次路由。读取返回的最小规则资源后，用原始需求生成页面规格，再依次执行需求覆盖、契约、构建和静态预检。'
+    reason: '已完成单次路由。通过 Design MCP 读取并验证最小上下文后，用原始需求生成页面规格，再依次执行需求覆盖、契约、构建和静态预检。'
   });
 }
 

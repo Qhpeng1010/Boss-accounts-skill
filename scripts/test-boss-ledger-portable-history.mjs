@@ -31,8 +31,24 @@ try {
     timeout: 30_000
   });
   if (generated.error || generated.status !== 0) throw new Error(generated.stderr || generated.stdout || 'Fast generation failed.');
-  const result = JSON.parse(generated.stdout);
-  if (result.status !== 'generated') throw new Error('Fast generation did not produce a Change.');
+  const awaiting = JSON.parse(generated.stdout);
+  if (awaiting.status !== 'awaiting-mcp' || !awaiting.routeContext || !awaiting.commands?.fast) {
+    throw new Error('Fast generation did not stop at the MCP gate.');
+  }
+  const executed = spawnSync(process.execPath, [
+    resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
+    '--request', request,
+    '--route-context', awaiting.routeContext,
+    '--mcp-verified',
+    '--json'
+  ], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 30_000
+  });
+  if (executed.error || executed.status !== 0) throw new Error(executed.stderr || executed.stdout || 'Gated fast execution failed.');
+  const result = JSON.parse(executed.stdout);
+  if (result.status !== 'generated') throw new Error('Gated fast execution did not produce a Change.');
   generatedChange = resolve(root, result.change);
   const vendor = resolve(generatedChange, 'vendor');
   assertVendorMode(vendor, 'linked');

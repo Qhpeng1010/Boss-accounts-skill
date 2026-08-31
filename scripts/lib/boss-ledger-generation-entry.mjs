@@ -22,7 +22,7 @@ function fallback(route, reason) {
     } : {}),
     next: routeNeedsClarification
       ? '补充澄清问题后重新提交原始需求。'
-      : '继续走受控自然语言生成，只读取该路由返回的最小规则资源。'
+      : '继续走受控自然语言生成，通过 Design MCP 读取并验证该路由所需的最小上下文。'
   };
 }
 

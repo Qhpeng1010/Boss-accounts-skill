@@ -48,7 +48,23 @@ try {
     throw new Error('An unavailable Boss Ledger capability was not distinguished from a recipe miss.');
   }
 
-  const result = spawnSync(process.execPath, [resolve(root, 'scripts/generate-boss-ledger-page.mjs'), '--request', request, '--json'], {
+  const gated = spawnSync(process.execPath, [resolve(root, 'scripts/generate-page.mjs'), '--request', request, '--recipe', 'auto'], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 30_000
+  });
+  if (gated.error?.code === 'ETIMEDOUT' || gated.status !== 0) throw new Error(gated.stderr || gated.stdout || 'Gated generation entry failed.');
+  const awaiting = JSON.parse(gated.stdout);
+  if (awaiting.status !== 'awaiting-mcp' || !awaiting.routeContext || !awaiting.commands?.fast) {
+    throw new Error('Fast generation did not stop at the MCP gate with reusable route context.');
+  }
+  const result = spawnSync(process.execPath, [
+    resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
+    '--request', request,
+    '--route-context', awaiting.routeContext,
+    '--mcp-verified',
+    '--json'
+  ], {
     cwd: root,
     encoding: 'utf8',
     timeout: 30_000
@@ -68,6 +84,15 @@ try {
   const review = readFileSync(resolve(generatedChangeDir, 'review.md'), 'utf8');
   if (!review.includes('静态预检已通过') || review.includes('浏览器自动验收')) {
     throw new Error('Generation entry did not preserve the manual-acceptance boundary.');
+  }
+  const bypass = spawnSync(process.execPath, [
+    resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
+    '--request', request,
+    '--route-context', awaiting.routeContext,
+    '--json'
+  ], { cwd: root, encoding: 'utf8', timeout: 30_000 });
+  if (bypass.status === 0 || !bypass.stderr.includes('--mcp-verified')) {
+    throw new Error('Fast generation accepted a route context without the explicit MCP verification gate.');
   }
   console.log('boss-ledger-generation-entry: pass');
 } catch (error) {
