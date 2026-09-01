@@ -3,17 +3,20 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveResources } from './resolve-resources.mjs';
+import { createTestMcpReceipt, testMcpEnvironment } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const changesRoot = resolve(root, 'changes');
 const changeDir = mkdtempSync(resolve(changesRoot, '.fast-path-test-'));
 const changeArg = relative(root, changeDir);
 const ruleTemplate = 'list.regular';
+const receipt = createTestMcpReceipt('创建老板管账运营人员查询列表。查询条件：姓名。列表字段：姓名。', 'list');
 
 function run(args) {
   const result = spawnSync(process.execPath, [resolve(root, 'scripts/prepare-boss-ledger-page-spec.mjs'), ...args], {
     cwd: root,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    env: testMcpEnvironment(receipt)
   });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'Fast preparation failed.');
 }
@@ -100,4 +103,5 @@ try {
   process.exitCode = 1;
 } finally {
   rmSync(changeDir, { recursive: true, force: true });
+  receipt.cleanup();
 }

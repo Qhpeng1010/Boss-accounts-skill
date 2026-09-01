@@ -1,14 +1,18 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
+import { createTestMcpReceipt } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const request = '做一个老板管账的页面，可以点击新增分账规则进行配置，分账规则页面分为3步，带交互，可上一步下一步最后提交。第一步：规则名称、规则类型、规则渠道、渠道下级、生效日期。第二步：分账方、手续费、预计到账金额、预计扣账金额。第三步：预览页面。落地页展示完成，可以继续新增，也可以返回列表查看。';
 const flexibleRequest = '老板管账结算规则页面。检索条件：规则名称、规则状态。结果字段：规则编号、规则名称、规则状态。打开记录明细。';
 const linkedTabRequest = '创建老板管账的分账规则查询页面。查询条件：规则名称、规则状态。列表字段：规则编号、规则名称、规则状态。支持新增，新增使用新标签页，填写规则名称、规则状态，提交后展示成功页并返回列表。';
 let generatedChangeDir;
+let resumedChangeDir;
+const receipts = [];
 
 try {
   const fast = classifyBossLedgerGeneration(request);
@@ -58,11 +62,13 @@ try {
   if (awaiting.status !== 'awaiting-mcp' || !awaiting.routeContext || !awaiting.commands?.fast) {
     throw new Error('Fast generation did not stop at the MCP gate with reusable route context.');
   }
+  const generatedReceipt = createTestMcpReceipt(request, 'form');
+  receipts.push(generatedReceipt);
   const result = spawnSync(process.execPath, [
     resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
     '--request', request,
     '--route-context', awaiting.routeContext,
-    '--mcp-verified',
+    '--mcp-verified', generatedReceipt.path,
     '--json'
   ], {
     cwd: root,
@@ -85,14 +91,54 @@ try {
   if (!review.includes('静态预检已通过') || review.includes('浏览器自动验收')) {
     throw new Error('Generation entry did not preserve the manual-acceptance boundary.');
   }
+
+  const resumeRouteResult = spawnSync(process.execPath, [resolve(root, 'scripts/generate-page.mjs'), '--request', flexibleRequest, '--recipe', 'auto'], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 30_000
+  });
+  if (resumeRouteResult.status !== 0) throw new Error(resumeRouteResult.stderr || resumeRouteResult.stdout || 'Resume route failed.');
+  const resumeRoute = JSON.parse(resumeRouteResult.stdout);
+  const resumeChange = `changes/20260831-list-resume-test-${randomBytes(4).toString('hex')}`;
+  resumedChangeDir = resolve(root, resumeChange);
+  mkdirSync(resumedChangeDir, { recursive: true });
+  writeFileSync(resolve(resumedChangeDir, 'generation-state.json'), `${JSON.stringify({
+    schemaVersion: 1,
+    system: 'boss-ledger',
+    changeId: resumeChange.split('/').at(-1),
+    mode: 'fast',
+    status: 'blocked',
+    startedAt: new Date().toISOString(),
+    timeoutMs: 30_000,
+    governanceMode: 'strict',
+    ruleTemplate: 'list.regular',
+    checkpoints: [{ name: 'change-directory', status: 'pass' }],
+    nextAction: 'resume test'
+  }, null, 2)}\n`);
+  const resumeReceipt = createTestMcpReceipt(flexibleRequest, 'list');
+  receipts.push(resumeReceipt);
+  const resumed = spawnSync(process.execPath, [
+    resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
+    '--request', flexibleRequest,
+    '--route-context', resumeRoute.routeContext,
+    '--mcp-verified', resumeReceipt.path,
+    '--change', resumeChange,
+    '--json'
+  ], { cwd: root, encoding: 'utf8', timeout: 30_000 });
+  if (resumed.status !== 0) throw new Error(resumed.stderr || resumed.stdout || 'Prepared Change resume failed.');
+  const resumedResult = JSON.parse(resumed.stdout);
+  if (resumedResult.change !== resumeChange || !existsSync(resolve(resumedChangeDir, 'page-spec.json'))
+      || !existsSync(resolve(resumedChangeDir, 'preview.html')) || !existsSync(resolve(resumedChangeDir, 'review.md'))) {
+    throw new Error('Prepared Change resume did not generate and verify the requested existing Change.');
+  }
   const bypass = spawnSync(process.execPath, [
     resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
     '--request', request,
     '--route-context', awaiting.routeContext,
     '--json'
   ], { cwd: root, encoding: 'utf8', timeout: 30_000 });
-  if (bypass.status === 0 || !bypass.stderr.includes('--mcp-verified')) {
-    throw new Error('Fast generation accepted a route context without the explicit MCP verification gate.');
+  if (bypass.status === 0 || !bypass.stderr.includes('--mcp-verified <receipt.json>')) {
+    throw new Error('Fast generation accepted a route context without a Design MCP receipt.');
   }
   console.log('boss-ledger-generation-entry: pass');
 } catch (error) {
@@ -100,4 +146,6 @@ try {
   process.exitCode = 1;
 } finally {
   if (generatedChangeDir) rmSync(generatedChangeDir, { recursive: true, force: true });
+  if (resumedChangeDir) rmSync(resumedChangeDir, { recursive: true, force: true });
+  receipts.forEach((receipt) => receipt.cleanup());
 }

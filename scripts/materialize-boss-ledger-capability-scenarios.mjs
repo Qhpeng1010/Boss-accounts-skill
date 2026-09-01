@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { scenarios } from '../modules/boss-ledger/execution/scenarios/capability-scenarios.mjs';
 import { validatePageSpec } from './lib/boss-ledger-page-spec.mjs';
+import { createTestMcpReceipt, testMcpEnvironment } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const requested = process.argv.find((arg) => arg.startsWith('--scenario='))?.split('=')[1];
@@ -14,8 +15,8 @@ if (!selected.length) {
   process.exit(2);
 }
 
-function run(label, script, args) {
-  const result = spawnSync(process.execPath, [resolve(root, script), ...args], { cwd: root, encoding: 'utf8', stdio: 'inherit' });
+function run(label, script, args, env) {
+  const result = spawnSync(process.execPath, [resolve(root, script), ...args], { cwd: root, encoding: 'utf8', stdio: 'inherit', env });
   if (result.status !== 0) throw new Error(`${label} failed.`);
 }
 
@@ -67,9 +68,15 @@ try {
     if (!existsSync(changeDir)) mkdirSync(changeDir, { recursive: true });
     writeFileSync(resolve(changeDir, 'page-spec.json'), `${JSON.stringify(spec, null, 2)}\n`);
     writeFileSync(resolve(changeDir, 'page-design.md'), pageDesign(spec, scenario));
-    run(`${scenario.id}: rules`, 'scripts/read-boss-ledger-rules.mjs', [changeRelative, spec.metadata.templateId]);
-    run(`${scenario.id}: build`, 'scripts/build-boss-ledger-page-spec.mjs', [`${changeRelative}/page-spec.json`]);
-    console.log(`capability-scenario: materialized (${scenario.id})`);
+    const receipt = createTestMcpReceipt(spec.metadata.request, spec.metadata.family);
+    try {
+      const env = testMcpEnvironment(receipt);
+      run(`${scenario.id}: rules`, 'scripts/read-boss-ledger-rules.mjs', [changeRelative, spec.metadata.templateId], env);
+      run(`${scenario.id}: build`, 'scripts/build-boss-ledger-page-spec.mjs', [`${changeRelative}/page-spec.json`], env);
+      console.log(`capability-scenario: materialized (${scenario.id})`);
+    } finally {
+      receipt.cleanup();
+    }
   }
   console.log(`boss-ledger-capability-scenarios: materialized ${selected.length} scenario(s)`);
 } catch (error) {

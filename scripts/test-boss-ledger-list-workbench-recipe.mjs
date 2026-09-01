@@ -6,6 +6,8 @@ import { spawnSync } from 'node:child_process';
 import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
 import { compileListWorkbench, parseListWorkbenchRequest } from './lib/boss-ledger-list-workbench-recipe.mjs';
 import { validatePageSpec } from './lib/boss-ledger-page-spec.mjs';
+import { normalizeRecipeRequest } from './lib/recipe-request-bridge.mjs';
+import { createTestMcpReceipt, testMcpEnvironment } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const request = `创建老板管账的分账规则管理列表页。
@@ -67,6 +69,7 @@ const merchantRequest = `做一个老板管账的商户查询列表页面。
 列表字段：商户编号、商户名称、所属行业、签约时间、商户状态、操作（查看、编辑、删除）。
 新增商户：基础信息（商户名称、商户简称、所属行业、联系人姓名、联系人手机号、商户状态）。`;
 const customActionRequest = merchantRequest.replace('查看、编辑、删除', '查看、编辑、删除、渠道绑定');
+const receipts = [];
 
 try {
   const classified = classifyBossLedgerGeneration(request);
@@ -162,10 +165,13 @@ try {
   if (validatePageSpec(merchantCompiled, { root }).length || merchantCompiled.shell.primaryNav?.[0]?.label !== '商户管理' || merchantCompiled.shell.sideMenusByPrimary?.['requested-primary']?.[0]?.children?.[0]?.label !== '商户查询' || !merchantCompiled.list.table.rowActions?.some((action) => action.label === '查看')) {
     throw new Error('A standard merchant list request did not compile into a valid and complete list page.');
   }
+  const merchantReceipt = createTestMcpReceipt(merchantRequest, 'list');
+  receipts.push(merchantReceipt);
   const merchantResult = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-list-workbench-recipe.mjs'), '--request', merchantRequest, '--change', merchantChangeArg], {
     cwd: root,
     encoding: 'utf8',
-    timeout: 30_000
+    timeout: 30_000,
+    env: testMcpEnvironment(merchantReceipt, normalizeRecipeRequest(merchantRequest))
   });
   if (merchantResult.status !== 0 || !existsSync(resolve(merchantChangeDir, 'preview.html'))) {
     throw new Error(merchantResult.stderr || merchantResult.stdout || 'A standard merchant list request failed static generation.');
@@ -208,10 +214,13 @@ try {
     throw new Error('Delete confirmation is missing irreversible impact or success feedback.');
   }
 
+  const receipt = createTestMcpReceipt(request, 'list');
+  receipts.push(receipt);
   const result = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-list-workbench-recipe.mjs'), '--request', request, '--change', changeArg], {
     cwd: root,
     encoding: 'utf8',
-    timeout: 30_000
+    timeout: 30_000,
+    env: testMcpEnvironment(receipt, normalizeRecipeRequest(request))
   });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'List workbench compiler failed.');
   if (!existsSync(resolve(changeDir, 'preview.html')) || !existsSync(resolve(changeDir, 'review.md'))) {
@@ -232,4 +241,5 @@ try {
 } finally {
   rmSync(changeDir, { recursive: true, force: true });
   rmSync(merchantChangeDir, { recursive: true, force: true });
+  receipts.forEach((receipt) => receipt.cleanup());
 }

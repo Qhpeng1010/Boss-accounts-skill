@@ -12,7 +12,9 @@ const requiredFiles = [
   'modules/boss-ledger/director-rules/03-interaction-acceptance-rules.md',
   'scripts/route-business.mjs', 'scripts/resolve-resources.mjs', 'scripts/generate-page.mjs',
   'scripts/generate-boss-ledger-page.mjs', 'scripts/build-boss-ledger-page-spec.mjs',
-  'scripts/verify-boss-ledger-page-spec.mjs', 'scripts/rebuild-boss-ledger-history.mjs'
+  'scripts/verify-boss-ledger-page-spec.mjs', 'scripts/rebuild-boss-ledger-history.mjs',
+  'scripts/lib/boss-ledger-mcp-evidence.mjs', 'scripts/record-boss-ledger-mcp-receipt.mjs',
+  'scripts/resume-boss-ledger-list-workbench-recipe.mjs', 'references/design-mcp-evidence.md'
 ];
 const missing = requiredFiles.filter((file) => !existsSync(resolve(root, file)));
 const errors = [];

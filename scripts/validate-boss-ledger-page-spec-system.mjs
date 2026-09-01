@@ -8,6 +8,8 @@ const steps = [
   ['generation-policy', 'scripts/check-boss-ledger-generation-policy.mjs', []],
   ['rule-coverage', 'scripts/check-boss-ledger-rule-coverage.mjs', []],
   ['release-manifest', 'scripts/verify-boss-ledger-release-manifest.mjs', []],
+  ['mcp-evidence-regression', 'scripts/test-boss-ledger-mcp-evidence.mjs', []],
+  ['generation-entry-regression', 'scripts/test-boss-ledger-generation-entry.mjs', []],
   ['contract-regression', 'scripts/test-boss-ledger-page-spec-contract.mjs', []],
   ['fast-path-regression', 'scripts/test-boss-ledger-fast-path.mjs', []],
   ['wizard-recipe-regression', 'scripts/test-boss-ledger-wizard-recipe.mjs', []],

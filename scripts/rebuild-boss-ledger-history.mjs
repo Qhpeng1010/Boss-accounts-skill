@@ -5,9 +5,16 @@ import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const strict = process.argv.includes('--strict');
+const specIndex = process.argv.indexOf('--spec');
+const requestedSpec = specIndex >= 0 ? process.argv[specIndex + 1] : '';
 const changesRoot = resolve(root, 'changes');
 
 function historySpecs() {
+  if (requestedSpec) {
+    const specPath = resolve(root, requestedSpec);
+    if (!specPath.startsWith(`${changesRoot}/`) || !specPath.endsWith('/page-spec.json') || !existsSync(specPath)) return [];
+    return [specPath];
+  }
   if (!existsSync(changesRoot)) return [];
   return readdirSync(changesRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -29,6 +36,10 @@ function run(label, script, specPath, { args = [], governed = true } = {}) {
 }
 
 const specs = historySpecs();
+if (requestedSpec && specs.length !== 1) {
+  console.error(`boss-ledger-history-rebuild: failed\n- invalid --spec target: ${requestedSpec}`);
+  process.exit(2);
+}
 const failures = [];
 for (const specPath of specs) {
   try {

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // rule-assertion: canonical.shell
 import { existsSync, readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 import { basename, dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { generatedPreviewApp, readJson, validatePageSpec } from './lib/boss-ledger-page-spec.mjs';
+import { loadMcpReceipt, sha256 } from './lib/boss-ledger-mcp-evidence.mjs';
 import { renderBossLedgerPreview, verifyPageVendor } from './lib/shared-browser-runtime.mjs';
 
 const args = process.argv.slice(2);
@@ -38,34 +38,9 @@ try {
 
 const rulesManifestPath = resolve(changeDir, 'rules-read.md');
 if (!existsSync(rulesManifestPath)) {
-  failures.push('rules-read.md is missing; run scripts/read-boss-ledger-rules.mjs before implementation');
+  failures.push('rules-read.md is missing; run the Design MCP preflight before implementation');
 } else {
   const manifest = readFileSync(rulesManifestPath, 'utf8');
-  const mandatoryRuleFiles = [
-    'modules/boss-ledger/director-rules/README.md',
-    'modules/boss-ledger/director-rules/01-visual-constitution.md',
-    'modules/boss-ledger/director-rules/02-template-application-rules.md',
-    'modules/boss-ledger/director-rules/03-interaction-acceptance-rules.md',
-    'modules/boss-ledger/execution/rule-template-registry.json',
-    'modules/boss-ledger/execution/generation-policy.json',
-    'modules/boss-ledger/execution/theme/theme-tokens.json',
-    'modules/boss-ledger/execution/context-packs/core.md',
-    'modules/boss-ledger/execution/context-packs/index.md',
-    'modules/boss-ledger/business-rules.md',
-  ];
-  const manifestRows = [...manifest.matchAll(/^- ((?:specs|modules)\/[^\s]+) \([^\n]*sha256:([a-f0-9]+)\)$/gm)];
-  const manifestHashes = new Map(manifestRows.map((match) => [match[1], match[2]]));
-  for (const file of mandatoryRuleFiles) {
-    const filePath = resolve(root, file);
-    if (!existsSync(filePath)) {
-      failures.push(`current rule file is missing: ${file}`);
-      continue;
-    }
-    const hash = createHash('sha256').update(readFileSync(filePath)).digest('hex').slice(0, 16);
-    if (manifestHashes.get(file) !== hash) {
-      failures.push(`rules-read.md is stale or does not prove the current ${file} was read; rerun scripts/read-boss-ledger-rules.mjs`);
-    }
-  }
   const selectedTemplateMatch = manifest.match(/^- Rule template: `?([^`\n]+)`?$/m);
   const selectedTemplate = selectedTemplateMatch?.[1]?.trim();
   const registryPath = 'modules/boss-ledger/execution/rule-template-registry.json';
@@ -73,28 +48,28 @@ if (!existsSync(rulesManifestPath)) {
   if (!selectedTemplate || !(registry?.templates || []).some((template) => template.id === selectedTemplate)) {
     failures.push('rules-read.md must name a current Rule template from rule-template-registry.json');
   }
-  const selectedPackMatch = manifest.match(/^- Selected rule pack: (modules\/boss-ledger\/execution\/context-packs\/[^\n]+)$/m);
-  const selectedPack = selectedPackMatch?.[1]?.trim();
-  if (!selectedPack || !manifestHashes.has(selectedPack)) {
-    failures.push('rules-read.md must include the selected family Rule Pack and its current hash');
-  }
-  for (const [file, recordedHash] of manifestHashes) {
-    const filePath = resolve(root, file);
-    if (!existsSync(filePath)) {
-      failures.push(`rules-read.md names a missing rule file: ${file}`);
-      continue;
+  const receiptPath = resolve(changeDir, 'mcp-context-receipt.json');
+  try {
+    const evidence = loadMcpReceipt(root, receiptPath, {
+      serviceId: 'boss-ledger',
+      family: spec.metadata?.family,
+      generationRequest: spec.metadata?.request,
+      allowStale: true
+    });
+    const expectedDigest = sha256(`${JSON.stringify(evidence.receipt, null, 2)}\n`);
+    const recordedDigest = manifest.match(/^- Evidence sha256: `([a-f0-9]{64})`$/m)?.[1];
+    if (recordedDigest !== expectedDigest) failures.push('rules-read.md does not match mcp-context-receipt.json.');
+    if (!manifest.includes('- Context tool: `design_get_context_pack`')) failures.push('rules-read.md must record the Design MCP context tool.');
+    for (const entry of evidence.receipt.acceptedPackages) {
+      if (!manifest.includes(`- \`package:${entry.packageId}\` (knowledge_check_verification: verified)`)) {
+        failures.push(`rules-read.md does not record verified MCP package ${entry.packageId}.`);
+      }
     }
-    const currentHash = createHash('sha256').update(readFileSync(filePath)).digest('hex').slice(0, 16);
-    if (recordedHash !== currentHash) {
-      failures.push(`rules-read.md contains a stale hash for ${file}; rerun scripts/read-boss-ledger-rules.mjs`);
-    }
+  } catch (error) {
+    failures.push(`Design MCP evidence: ${error.message}`);
   }
-  if (manifestRows.length < mandatoryRuleFiles.length) {
-    failures.push('rules-read.md must include all required Director Rules, rule registry, and generated Context Pack hashes');
-  }
-  if (!/Fixed Shell: renderer-owned; it is not a business template input\./.test(manifest)
-      || !/Director artifacts freshness: verified before this record was created\./.test(manifest)) {
-    failures.push('rules-read.md must explicitly confirm the fixed Shell boundary and fresh generated Director artifacts');
+  if (!/Fixed Shell: renderer-owned; it is not a business template input\./.test(manifest)) {
+    failures.push('rules-read.md must explicitly confirm the fixed Shell boundary.');
   }
 }
 
