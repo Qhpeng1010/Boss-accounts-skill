@@ -4,12 +4,14 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { compileStructuredWizard, parseStructuredWizardRequest } from './lib/boss-ledger-wizard-recipe.mjs';
+import { createTestMcpReceipt, testMcpEnvironment } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const request = '做一个老板管账的页面，可以点击新增分账规则进行配置，分账规则页面分为3步，带交互，可上一步下一步最后提交。第一步：规则名称、规则类型、规则渠道、渠道下级、生效日期。第二步：分账方、手续费、预计到账金额、预计扣账金额。第三步：预览页面。落地页展示完成，可以继续新增，也可以返回列表查看。';
 const changeId = `20260730-wizard-recipe-test-${randomBytes(4).toString('hex')}`;
 const changeArg = `changes/${changeId}`;
 const changeDir = resolve(root, changeArg);
+const receipt = createTestMcpReceipt(request, 'form');
 
 try {
   const parsed = parseStructuredWizardRequest(request);
@@ -30,7 +32,8 @@ try {
   }
   const result = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-wizard-recipe.mjs'), '--request', request, '--change', changeArg], {
     cwd: root,
-    encoding: 'utf8'
+    encoding: 'utf8',
+    env: testMcpEnvironment(receipt)
   });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'Recipe compiler failed.');
   if (!existsSync(resolve(changeDir, 'preview.html')) || !existsSync(resolve(changeDir, 'review.md'))) {
@@ -49,4 +52,5 @@ try {
   process.exitCode = 1;
 } finally {
   rmSync(changeDir, { recursive: true, force: true });
+  receipt.cleanup();
 }

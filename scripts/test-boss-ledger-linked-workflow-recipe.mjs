@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
 import { compileLinkedListPageForm, compileLinkedListWizard } from './lib/boss-ledger-linked-workflow-recipe.mjs';
 import { validatePageSpec } from './lib/boss-ledger-page-spec.mjs';
+import { createTestMcpReceipt, testMcpEnvironment } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const request = `创建老板管账的分账规则查询列表页面。
@@ -37,6 +38,7 @@ const groupedRequest = `生成一个“商户结算账户开通管理”页面�
 第三步：分为“材料复核”和“提交确认”两个分组，核验营业执照、法人身份、银行卡材料，并确认协议与风险提示后提交。
 
 支持保存草稿、上一步、下一步和提交申请；关闭录入标签后保留原查询列表的筛选和分页状态。`;
+const receipts = [];
 
 try {
   const decision = classifyBossLedgerGeneration(request);
@@ -63,14 +65,18 @@ try {
   if (pageFormDecision.status !== 'fast' || pageFormDecision.recipe !== 'linked-list-page-form') throw new Error('Linked list-to-page-form request did not select the workflow recipe.');
   const pageForm = compileLinkedListPageForm({ rawRequest: pageFormRequest, changeId });
   if (validatePageSpec(pageForm, { root }).length) throw new Error(`Linked page form Page Spec is invalid: ${validatePageSpec(pageForm, { root }).join('; ')}`);
-  const result = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-linked-workflow-recipe.mjs'), '--request', request, '--change', changeArg], { cwd: root, encoding: 'utf8', timeout: 30_000 });
+  const workflowReceipt = createTestMcpReceipt(request, 'form');
+  receipts.push(workflowReceipt);
+  const result = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-linked-workflow-recipe.mjs'), '--request', request, '--change', changeArg], { cwd: root, encoding: 'utf8', timeout: 30_000, env: testMcpEnvironment(workflowReceipt, spec.metadata.request) });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'Linked workflow compiler failed.');
   if (!existsSync(resolve(changeDir, 'preview.html')) || !existsSync(resolve(changeDir, 'review.md'))) throw new Error('Linked workflow compiler did not produce preview and review artifacts.');
   const workflowReport = JSON.parse(readFileSync(resolve(changeDir, 'generation-report.json'), 'utf8'));
   if (workflowReport.recipeName !== 'linked-list-wizard' || !Number.isInteger(workflowReport.timings.totalMs)) throw new Error('Linked workflow compiler did not persist timing data.');
   const app = readFileSync(resolve(changeDir, 'page-spec-runtime.js'), 'utf8');
   if (!app.includes('LinkedWorkflowPage') || !app.includes('sourceRecordFromValues')) throw new Error('Preview runtime does not include the linked workflow behavior.');
-  const pageFormResult = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-linked-page-form-recipe.mjs'), '--request', pageFormRequest, '--change', pageFormChangeArg], { cwd: root, encoding: 'utf8', timeout: 30_000 });
+  const pageFormReceipt = createTestMcpReceipt(pageFormRequest, 'form');
+  receipts.push(pageFormReceipt);
+  const pageFormResult = spawnSync(process.execPath, [resolve(root, 'scripts/compile-boss-ledger-linked-page-form-recipe.mjs'), '--request', pageFormRequest, '--change', pageFormChangeArg], { cwd: root, encoding: 'utf8', timeout: 30_000, env: testMcpEnvironment(pageFormReceipt, pageForm.metadata.request) });
   if (pageFormResult.status !== 0) throw new Error(pageFormResult.stderr || pageFormResult.stdout || 'Linked page-form compiler failed.');
   if (!existsSync(resolve(pageFormChangeDir, 'preview.html')) || !existsSync(resolve(pageFormChangeDir, 'review.md'))) throw new Error('Linked page-form compiler did not produce preview and review artifacts.');
   const pageFormReport = JSON.parse(readFileSync(resolve(pageFormChangeDir, 'generation-report.json'), 'utf8'));
@@ -82,4 +88,5 @@ try {
 } finally {
   rmSync(changeDir, { recursive: true, force: true });
   rmSync(pageFormChangeDir, { recursive: true, force: true });
+  receipts.forEach((receipt) => receipt.cleanup());
 }

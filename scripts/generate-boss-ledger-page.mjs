@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
 import { recipeRouteEnvironment } from './lib/recipe-route-context.mjs';
 import { readGenerationReport, writeGenerationReport } from './lib/generation-performance.mjs';
+import {
+  loadMcpReceipt,
+  MCP_GENERATION_REQUEST_ENV,
+  MCP_ORIGINAL_REQUEST_ENV,
+  MCP_RECEIPT_ENV
+} from './lib/boss-ledger-mcp-evidence.mjs';
 
 const root = process.cwd();
 const args = process.argv.slice(2);
@@ -55,15 +61,27 @@ function isValidChangeArg(value) {
   return /^changes\/\d{8}-[a-z0-9-]+$/.test(value || '');
 }
 
-function allocateChange(request, requestedChange) {
+function generationTarget(request, requestedChange, recipe) {
   const requested = String(requestedChange || '').trim();
-  if (isValidChangeArg(requested) && !existsSync(resolve(root, requested))) return requested;
+  if (isValidChangeArg(requested)) {
+    const requestedPath = resolve(root, requested);
+    if (!existsSync(requestedPath)) return { change: requested, resume: false };
+    const statePath = resolve(requestedPath, 'generation-state.json');
+    if (recipe !== 'list-workbench' || existsSync(resolve(requestedPath, 'page-spec.json')) || !existsSync(statePath)) {
+      throw new Error('An existing --change can only resume a prepared list-workbench Change without page-spec.json.');
+    }
+    const state = JSON.parse(readFileSync(statePath, 'utf8'));
+    if (state.system !== 'boss-ledger' || !['blocked', 'ready-for-page-spec'].includes(state.status)) {
+      throw new Error('The existing --change is not a blocked or ready Boss Ledger prepared Change.');
+    }
+    return { change: requested, resume: true };
+  }
 
   const base = `changes/${todayShanghai()}-${slugFromRequest(request)}`;
   let candidate = base;
   let suffix = 2;
   while (existsSync(resolve(root, candidate))) candidate = `${base}-${suffix++}`;
-  return candidate;
+  return { change: candidate, resume: false };
 }
 
 function print(result, json) {
@@ -83,31 +101,36 @@ function print(result, json) {
   if (result.next) console.log(`- next: ${result.next}`);
 }
 
-function generate(result, request, change, resolvedRoute) {
+function generate(result, request, target, resolvedRoute, mcpReceiptPath, originalRequest) {
   const compiler = result.recipe === 'list-workbench'
-    ? 'scripts/compile-boss-ledger-list-workbench-recipe.mjs'
+    ? target.resume ? 'scripts/resume-boss-ledger-list-workbench-recipe.mjs' : 'scripts/compile-boss-ledger-list-workbench-recipe.mjs'
     : result.recipe === 'linked-list-wizard'
       ? 'scripts/compile-boss-ledger-linked-workflow-recipe.mjs'
       : result.recipe === 'linked-list-page-form'
         ? 'scripts/compile-boss-ledger-linked-page-form-recipe.mjs'
     : 'scripts/compile-boss-ledger-wizard-recipe.mjs';
-  const command = [resolve(root, compiler), '--request', request, '--change', change];
+  const command = [resolve(root, compiler), '--request', request, '--change', target.change];
   const executed = spawnSync(process.execPath, command, {
     cwd: root,
     encoding: 'utf8',
     timeout: 30_000,
-    env: recipeRouteEnvironment(request, resolvedRoute)
+    env: recipeRouteEnvironment(request, resolvedRoute, {
+      ...process.env,
+      [MCP_RECEIPT_ENV]: mcpReceiptPath,
+      [MCP_ORIGINAL_REQUEST_ENV]: originalRequest,
+      [MCP_GENERATION_REQUEST_ENV]: request
+    })
   });
   if (executed.error?.code === 'ETIMEDOUT') throw new Error('快速生成超过 30 秒。');
   if (executed.error || executed.status !== 0) throw new Error(executed.stderr || executed.stdout || '快速生成失败。');
-  const stageReport = readGenerationReport(resolve(root, change));
+  const stageReport = readGenerationReport(resolve(root, target.change));
   if (!stageReport) throw new Error('快速生成未写入阶段耗时报告。');
   return {
     ...result,
     status: 'generated',
-    change,
-    preview: `${change}/preview.html`,
-    review: `${change}/review.md`,
+    change: target.change,
+    preview: `${target.change}/preview.html`,
+    review: `${target.change}/review.md`,
     checks: 'passed',
     humanAcceptance: 'pending',
     stageReport,
@@ -115,7 +138,7 @@ function generate(result, request, change, resolvedRoute) {
   };
 }
 
-export function generateBossLedgerPage({ request, requestedChange = '', route = null, timingContext = {} }) {
+export function generateBossLedgerPage({ request, requestedChange = '', route = null, mcpReceiptPath = '', timingContext = {} }) {
   const startedAt = timingContext.startedAt || Date.now();
   const classifyStarted = Date.now();
   const decision = classifyBossLedgerGeneration(request, { route });
@@ -134,9 +157,9 @@ export function generateBossLedgerPage({ request, requestedChange = '', route = 
       elapsedMs: timings.totalMs
     };
   }
-  const change = allocateChange(request, requestedChange);
+  const target = generationTarget(request, requestedChange, decision.recipe);
   const inputRequest = decision.inputRequest || request;
-  const delivered = generate({ ...decision, requestedChange }, inputRequest, change, route);
+  const delivered = generate({ ...decision, requestedChange }, inputRequest, target, route, mcpReceiptPath, request);
   const timings = {
     ...baseTimings,
     ...delivered.stageReport.timings,
@@ -151,7 +174,7 @@ export function generateBossLedgerPage({ request, requestedChange = '', route = 
     elapsedMs: timings.totalMs
   };
   delete result.stageReport;
-  writeGenerationReport(resolve(root, change), {
+  writeGenerationReport(resolve(root, result.change), {
     system: 'boss-ledger',
     recipeName: result.recipeName,
     outcome: result.outcome,
@@ -166,13 +189,18 @@ function main() {
   const request = arg('--request');
   const requestedChange = arg('--change');
   const json = args.includes('--json');
-  const mcpVerified = args.includes('--mcp-verified');
+  const mcpReceiptArg = arg('--mcp-verified');
   const route = decodeRouteContext(arg('--route-context'), request);
-  if (!request || !mcpVerified || !route) {
-    throw new Error('Usage: node scripts/generate-boss-ledger-page.mjs --request "<业务需求>" --route-context <encoded-route> --mcp-verified [--change changes/<change-id>] [--json]');
+  if (!request || !mcpReceiptArg || mcpReceiptArg.startsWith('--') || !route) {
+    throw new Error('Usage: node scripts/generate-boss-ledger-page.mjs --request "<业务需求>" --route-context <encoded-route> --mcp-verified <receipt.json> [--change changes/<change-id>] [--json]');
   }
+  const evidence = loadMcpReceipt(root, mcpReceiptArg, {
+    serviceId: 'boss-ledger',
+    family: route.execution?.family,
+    request
+  });
 
-  print(generateBossLedgerPage({ request, requestedChange, route }), json);
+  print(generateBossLedgerPage({ request, requestedChange, route, mcpReceiptPath: evidence.receiptPath }), json);
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

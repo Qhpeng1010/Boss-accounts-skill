@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { relative } from 'node:path';
 import { resolveResources } from './resolve-resources.mjs';
 import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
+import { receiptPathFor } from './lib/boss-ledger-mcp-evidence.mjs';
 
 const args = process.argv.slice(2);
 const textOutput = args.includes('--text');
@@ -53,9 +55,9 @@ function encodeRouteContext(request, route) {
   return Buffer.from(JSON.stringify({ request, route }), 'utf8').toString('base64url');
 }
 
-function fastCommand(request, route) {
+function fastCommand(request, route, receiptPath) {
   const routeContext = encodeRouteContext(request, route);
-  return `node scripts/generate-boss-ledger-page.mjs --request ${shellQuote(request)} --route-context ${routeContext} --mcp-verified --json`;
+  return `node scripts/generate-boss-ledger-page.mjs --request ${shellQuote(request)} --route-context ${routeContext} --mcp-verified ${shellQuote(receiptPath)} --json`;
 }
 
 function main() {
@@ -86,6 +88,8 @@ function main() {
     return print({ status: 'blocked', outcome: 'blocked', recipeName: null, fallbackReason: reason, timings: { routeMs, totalMs }, elapsedMs: totalMs, route: routeSummary(route), reason });
   }
 
+  const mcpReceiptPath = relative(process.cwd(), receiptPathFor(process.cwd(), request, route.execution?.family));
+
   let recipeAttempt;
   const recipeUnavailable = recipeMode === 'auto' && route.execution?.availability !== 'available';
   if (recipeMode === 'auto' && !recipeUnavailable) {
@@ -98,11 +102,12 @@ function main() {
         recipeName: recipeAttempt.recipe,
         route: routeSummary(route),
         routeContext: encodeRouteContext(request, route),
-        commands: { fast: fastCommand(request, route) },
+        commands: { fast: fastCommand(request, route, mcpReceiptPath) },
         mcp: {
           status: 'pending',
           contextTool: 'design_get_context_pack',
           verificationTool: 'knowledge_check_verification',
+          receiptPath: mcpReceiptPath,
           next: '完成 MCP context pack 读取并验证所有采信知识包后，执行 commands.fast。'
         },
         timings: { routeMs, classifyMs: totalMs - routeMs, totalMs },
@@ -125,7 +130,16 @@ function main() {
     fallbackReason: recipeUnavailable ? `当前能力状态为 ${route.execution?.availability || 'unknown'}，严格配方未执行，已转入自然语言生成。` : recipeAttempt?.fallbackReason || recipeAttempt?.reason || null,
     route: routeSummary(route),
     resources: route.resources,
-    commands: route.commands,
+    commands: {
+      ...route.commands,
+      preflight: `${route.commands.preflight} --mcp-receipt ${shellQuote(mcpReceiptPath)} --request ${shellQuote(request)}`
+    },
+    mcp: {
+      status: 'pending',
+      contextTool: 'design_get_context_pack',
+      verificationTool: 'knowledge_check_verification',
+      receiptPath: mcpReceiptPath
+    },
     warnings,
     ...(recipeAttempt ? { recipeAttempt: { status: recipeAttempt.status, reason: recipeAttempt.reason } } : {}),
     timings: { routeMs, ...(recipeAttempt?.timings?.classifyMs !== undefined ? { classifyMs: recipeAttempt.timings.classifyMs } : {}), totalMs },

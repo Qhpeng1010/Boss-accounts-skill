@@ -2,10 +2,12 @@
 import { existsSync, lstatSync, rmSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createTestMcpReceipt } from './test-support/boss-ledger-mcp-receipt.mjs';
 
 const root = process.cwd();
 const request = '创建老板管账结算规则查询列表。查询条件：规则名称、规则状态。列表字段：规则编号、规则名称、规则状态。';
 let generatedChange;
+const receipt = createTestMcpReceipt(request, 'list');
 
 function sharesStorage(left, right) {
   const leftStat = statSync(left);
@@ -39,7 +41,7 @@ try {
     resolve(root, 'scripts/generate-boss-ledger-page.mjs'),
     '--request', request,
     '--route-context', awaiting.routeContext,
-    '--mcp-verified',
+    '--mcp-verified', receipt.path,
     '--json'
   ], {
     cwd: root,
@@ -52,7 +54,7 @@ try {
   generatedChange = resolve(root, result.change);
   const vendor = resolve(generatedChange, 'vendor');
   assertVendorMode(vendor, 'linked');
-  const rebuild = spawnSync(process.execPath, [resolve(root, 'scripts/rebuild-boss-ledger-history.mjs'), '--strict'], {
+  const rebuild = spawnSync(process.execPath, [resolve(root, 'scripts/rebuild-boss-ledger-history.mjs'), '--strict', '--spec', `${result.change}/page-spec.json`], {
     cwd: root,
     encoding: 'utf8',
     timeout: 60_000
@@ -90,4 +92,5 @@ try {
   process.exitCode = 1;
 } finally {
   if (generatedChange) rmSync(generatedChange, { recursive: true, force: true });
+  receipt.cleanup();
 }

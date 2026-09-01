@@ -51,6 +51,14 @@ knowledge_check_verification({ ref: "package:<packageId>" })
 
 Use a package only when that check succeeds. A missing, failed, unverifiable, or stale check is a hard stop. The `ref` value must never be a bare package ID.
 
+Record the raw context response and every raw verification response using [Design MCP Evidence](references/design-mcp-evidence.md). The unified entry returns the receipt destination in `mcp.receiptPath`. Validate and normalize the receipt before local preflight:
+
+```text
+node scripts/record-boss-ledger-mcp-receipt.mjs --input <raw-receipt.json> --output <mcp.receiptPath> --request "<original request>" --family <family>
+```
+
+`--mcp-verified` takes this receipt path as its value; a bare flag or a prose assertion is not evidence.
+
 Only when the routed request needs more detail, call the corresponding Design MCP tool, and verify the package before using its response:
 
 - rule text: `design_get_rule({ serviceId, packageId, ruleId })`
@@ -76,6 +84,8 @@ Always keep these local and unchanged: `generation-policy`, Page Spec schema, sc
    - `blocked`: Report the real missing specification, renderer, infrastructure, or MCP condition.
 
 3. 页面方案只决策一次。不得再次路由、扫描全部规则包、读取历史 Change、读取固定渲染器源代码，或使用通用 UI 技能重新选择页面结构。
+
+4. An existing prepared list Change may resume only when it has `generation-state.json`, has no `page-spec.json`, and is `blocked` or `ready-for-page-spec`. Pass that exact path with `--change` to the verified fast command. The ordinary list recipe continues to require a new directory and never overwrites a Page Spec.
 
 ## Delivery And Upgrades
 
