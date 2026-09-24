@@ -1,10 +1,10 @@
 /**
  * Normalize common business wording before a parameterized recipe parses it.
- * This is intentionally lexical and conservative: it may expose an existing
- * recipe, but it never invents fields, actions, or unsupported capabilities.
+ * This bridge only canonicalizes equivalent labels and operation wording. It
+ * never invents fields, steps, or defaults from trigger phrases.
  */
 export function normalizeRecipeRequest(rawRequest) {
-  return String(rawRequest || '')
+  const normalized = String(rawRequest || '')
     // A line break normally separates requirement sections, not fields in one section.
     .replace(/\\[rn]/g, '；')
     .replace(/\r?\n/g, '；')
@@ -23,6 +23,7 @@ export function normalizeRecipeRequest(rawRequest) {
     .replace(/(?:打开|进入|查看)(?:该|任一|每条)?记录详情/g, '查看详情')
     .replace(/查看详情信息/g, '查看详情')
     .trim();
+  return normalized;
 }
 
 export function bridgeChangedRequest(rawRequest) {

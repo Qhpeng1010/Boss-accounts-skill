@@ -3,14 +3,25 @@
   const antd = global.antd;
   const icons = global.icons || global.antdIcons || global.AntDesignIcons || {};
 
+  function defaultMenuIcon() {
+    const IconComponent = icons.AppstoreOutlined || icons.BankOutlined || icons.SettingOutlined;
+    return IconComponent ? React.createElement(IconComponent) : null;
+  }
+
   function normalizeMenuItems(items) {
-    return (items || []).map((item) => ({
-      ...item,
-      icon: typeof item.icon === 'string' && icons[item.icon]
-        ? React.createElement(icons[item.icon])
-        : item.icon,
-      children: item.children ? normalizeMenuItems(item.children) : undefined
-    }));
+    return (items || []).map((item) => {
+      const icon = typeof item.icon === 'string'
+        ? (icons[item.icon] ? React.createElement(icons[item.icon]) : defaultMenuIcon())
+        : React.isValidElement(item.icon)
+          ? item.icon
+          : null;
+
+      return {
+        ...item,
+        icon,
+        children: item.children ? normalizeMenuItems(item.children) : undefined
+      };
+    });
   }
 
   function flattenRoutes(items, result = new Map()) {

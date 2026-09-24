@@ -5,49 +5,49 @@
     "hash": "4684b5774c887d10"
   },
   "modules/boss-ledger/director-rules/01-visual-constitution.md": {
-    "signature": "1786443805000:16069",
-    "lines": 113,
-    "hash": "a19091e8f3aff338"
+    "signature": "1790239544099.4675:16881",
+    "lines": 117,
+    "hash": "eb6d3717840e3a8e"
   },
   "modules/boss-ledger/director-rules/02-template-application-rules.md": {
-    "signature": "1786625633136.1748:15398",
-    "lines": 85,
-    "hash": "9c2390830cd22a8b"
+    "signature": "1790239544139.1484:16705",
+    "lines": 89,
+    "hash": "3bc46f3709fe685d"
   },
   "modules/boss-ledger/director-rules/03-interaction-acceptance-rules.md": {
-    "signature": "1786443805000:13373",
-    "lines": 81,
-    "hash": "c46f319bd29b8bc2"
+    "signature": "1790239544177.4583:14948",
+    "lines": 87,
+    "hash": "ffc63786142f041a"
   },
   "modules/boss-ledger/execution/rule-template-registry.json": {
-    "signature": "1786625688662.13:6883",
-    "lines": 254,
-    "hash": "5d7f136462849d76"
+    "signature": "1790239590237.0383:7319",
+    "lines": 274,
+    "hash": "5609bc543129a5cd"
   },
   "modules/boss-ledger/execution/generation-policy.json": {
-    "signature": "1786626340948.4348:15881",
-    "lines": 356,
-    "hash": "44f674edd56e2616"
+    "signature": "1790245386844.45:18319",
+    "lines": 388,
+    "hash": "ee4f74fe27b6f564"
   },
   "modules/boss-ledger/execution/theme/theme-tokens.json": {
-    "signature": "1786625688662.499:1533",
+    "signature": "1790239590237.7937:1533",
     "lines": 44,
-    "hash": "56f22171f0bc16e8"
+    "hash": "e7b265f8b881e717"
   },
   "modules/boss-ledger/execution/context-packs/core.md": {
-    "signature": "1786625688664.1702:8009",
-    "lines": 31,
-    "hash": "c7b4cbe586333254"
+    "signature": "1790239590239.2207:8814",
+    "lines": 33,
+    "hash": "08c9ad81cbb086ac"
   },
   "modules/boss-ledger/execution/context-packs/index.md": {
-    "signature": "1786625688664.4133:3285",
+    "signature": "1790239590239.6133:3285",
     "lines": 27,
     "hash": "0cd1f81808592e57"
   },
   "modules/boss-ledger/execution/context-packs/list.md": {
-    "signature": "1786625688665.1753:20338",
-    "lines": 57,
-    "hash": "2f533463f8334d48"
+    "signature": "1790239590240.639:27549",
+    "lines": 75,
+    "hash": "a67ade42cf7842c4"
   },
   "modules/boss-ledger/business-rules.md": {
     "signature": "1786443805000:10743",
@@ -55,17 +55,17 @@
     "hash": "813eb0195858184d"
   },
   "modules/boss-ledger/execution/context-packs/form.md": {
-    "signature": "1786625688665.6355:38529",
+    "signature": "1790239590241.1143:38529",
     "lines": 116,
     "hash": "aa107aa2baae997d"
   },
   "modules/boss-ledger/execution/context-packs/detail.md": {
-    "signature": "1786625688665.7773:3269",
+    "signature": "1790239590241.3552:3269",
     "lines": 23,
     "hash": "8555c261a39de9be"
   },
   "modules/boss-ledger/execution/context-packs/dashboard.md": {
-    "signature": "1786625688666.03:1779",
+    "signature": "1790239590241.778:1779",
     "lines": 21,
     "hash": "904ea9319abd0c46"
   }

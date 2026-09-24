@@ -67,6 +67,7 @@ const merchantRequest = `做一个老板管账的商户查询列表页面。
 列表字段：商户编号、商户名称、所属行业、签约时间、商户状态、操作（查看、编辑、删除）。
 新增商户：基础信息（商户名称、商户简称、所属行业、联系人姓名、联系人手机号、商户状态）。`;
 const customActionRequest = merchantRequest.replace('查看、编辑、删除', '查看、编辑、删除、渠道绑定');
+const detailAliasRequest = merchantRequest.replace('查看、编辑、删除', '查看详情、修改、删除');
 
 try {
   const classified = classifyBossLedgerGeneration(request);
@@ -171,15 +172,28 @@ try {
     throw new Error(merchantResult.stderr || merchantResult.stdout || 'A standard merchant list request failed static generation.');
   }
   const customAction = classifyBossLedgerGeneration(customActionRequest);
-  if (customAction.status !== 'fallback' || customAction.decision !== 'natural-generation') {
-    throw new Error('A clear list request with an unregistered custom action did not continue to controlled natural-language generation.');
+  if (customAction.status !== 'fast' || customAction.recipe !== 'list-workbench') {
+    throw new Error('A clear list request with a custom action did not stay on the list workbench fast path.');
+  }
+  const customActionSpec = compileListWorkbench({ rawRequest: customActionRequest, changeId });
+  if (validatePageSpec(customActionSpec, { root }).length || !customActionSpec.list.table.rowActions?.some((action) => action.label === '渠道绑定')) {
+    throw new Error('The list workbench did not preserve a custom row operation.');
+  }
+  const detailAliasSpec = compileListWorkbench({ rawRequest: detailAliasRequest, changeId });
+  if (validatePageSpec(detailAliasSpec, { root }).length
+      || !detailAliasSpec.list.table.rowActions?.some((action) => action.type === 'detail' && action.label === '查看详情')
+      || !detailAliasSpec.list.table.rowActions?.some((action) => action.type === 'edit' && action.label === '修改')) {
+    throw new Error('The list workbench did not normalize and preserve detail/edit operation aliases.');
   }
 
   const compiled = compileListWorkbench({ rawRequest: request, changeId });
   if (!compiled.content.capabilities.includes('query.advanced') || compiled.content.capabilities.includes('query.basic')) {
     throw new Error('More than six query fields must use advanced query mode.');
   }
-  if (!compiled.content.capabilities.includes('table.columnSettings') || !compiled.list.table.tools?.includes('settings')) {
+  if (!compiled.content.capabilities.includes('table.columnSettings')
+      || !compiled.content.capabilities.includes('table.columnOrder')
+      || !compiled.list.table.tools?.includes('settings')
+      || compiled.list.table.columnSettings?.allowOrder !== true) {
     throw new Error('Every list workbench must declare the fixed column-settings control.');
   }
   if (compiled.list.query.defaultExpanded !== false || Object.hasOwn(compiled.list.query, 'collapseThreshold') || compiled.list.query.fields.filter((field) => field.advanced).length !== 4) {

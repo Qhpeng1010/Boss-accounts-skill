@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const root = process.cwd();
 const requiredFiles = [
-  'AGENTS.md', 'SKILL.md', 'README.md', 'agents/openai.yaml', 'package.json', 'package-lock.json',
+  'SKILL.md', 'README.md', 'agents/openai.yaml', 'package.json', 'package-lock.json',
   'modules/shared/product.md', 'modules/shared/browser-runtime/README.md', 'modules/shared/browser-runtime/vendor/runtime-manifest.json',
   'modules/boss-ledger/domain.json', 'modules/boss-ledger/business-rules.md',
   'modules/boss-ledger/director-rules/01-visual-constitution.md',
@@ -39,7 +39,7 @@ function collectText(relativePath) {
   });
 }
 const crossServiceRefs = collectText('scripts')
-  .concat(['SKILL.md', 'AGENTS.md', 'README.md'])
+  .concat(['SKILL.md', 'README.md'])
   .filter((file) => /\.(?:md|mjs|js)$/.test(file))
   .filter((file) => !file.endsWith('check-boss-accounts-skill-integrity.mjs'))
   .filter((file) => /\b(?:easy-account|open-platform)\b/.test(readFileSync(resolve(root, file), 'utf8')));

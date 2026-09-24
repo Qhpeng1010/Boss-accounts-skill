@@ -249,12 +249,44 @@
       "ruleRefs": ["BL-TPL-001", "BL-TPL-007", "BL-TPL-012", "BL-TPL-021", "BL-INT-005", "BL-INT-006", "BL-INT-017"]
     },
     {
+      "id": "form.groups-source-list-onboarding",
+      "family": "form",
+      "templateIds": ["form.grouped-page"],
+      "evidence": "manual-business",
+      "capabilities": ["form.groups", "form.stickyActions", "form.returnSource", "form.resultSummary", "form.sourceList", "form.upload", "query.basic", "table.flat", "table.pagination", "table.status", "table.refresh", "table.columnSettings", "detail.drawer", "table.editAction"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-005", "BL-INT-006", "BL-INT-017"]
+    },
+    {
+      "id": "form.groups-source-list-onboarding-column-order",
+      "family": "form",
+      "templateIds": ["form.grouped-page"],
+      "evidence": "manual-business",
+      "capabilities": ["form.groups", "form.stickyActions", "form.returnSource", "form.resultSummary", "form.sourceList", "form.upload", "query.basic", "table.flat", "table.pagination", "table.status", "table.columnSettings", "table.columnOrder", "detail.drawer", "table.editAction"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-016", "BL-TPL-021", "BL-INT-004", "BL-INT-005", "BL-INT-006", "BL-INT-017"]
+    },
+    {
       "id": "form.steps-source-list-basic",
       "family": "form",
       "templateIds": ["form.staged-flow"],
       "evidence": "manual-business",
       "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.sideGuide", "form.upload", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.resultFeedback", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.status", "table.amount", "table.refresh", "table.columnSettings", "table.confirmAction", "table.deleteAction", "detail.drawer", "detail.drawerTable", "table.editAction", "table.batchAction", "table.expandable", "table.export", "table.columnOrder"],
       "ruleRefs": ["BL-TPL-001", "BL-TPL-003", "BL-TPL-006", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-007", "BL-INT-010", "BL-INT-017"]
+    },
+    {
+      "id": "form.steps-source-list-basic-query",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.steps", "form.stickyActions", "form.review", "form.returnSource", "form.resultSummary", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.status", "table.refresh", "table.columnSettings", "detail.drawer"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-007", "BL-INT-017"]
+    },
+    {
+      "id": "form.steps-source-list-basic-fund",
+      "family": "form",
+      "templateIds": ["form.staged-flow"],
+      "evidence": "manual-business",
+      "capabilities": ["form.simple", "form.groups", "form.steps", "form.stickyActions", "form.review", "form.reviewTable", "form.returnSource", "form.resultSummary", "form.sourceList", "query.basic", "table.flat", "table.pagination", "table.amount", "table.columnSettings", "table.columnOrder", "detail.drawer", "detail.drawerTable"],
+      "ruleRefs": ["BL-TPL-001", "BL-TPL-007", "BL-TPL-012", "BL-TPL-013", "BL-TPL-021", "BL-INT-004", "BL-INT-006", "BL-INT-007", "BL-INT-017"]
     },
     {
       "id": "form.steps-source-list-advanced",

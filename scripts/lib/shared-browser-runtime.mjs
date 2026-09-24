@@ -32,7 +32,10 @@ export function assertSharedBrowserRuntime(root, spec) {
   const runtimeDir = sharedRuntimeDirectory(root);
   const manifest = readRuntimeManifest(root);
   const failures = [];
-  for (const name of [...manifest.baseFiles, ...manifest.dashboardFiles]) {
+  // Validate only the runtime files this page can load. Dashboard bundles are
+  // intentionally skipped for list/form/detail pages to keep generation cheap.
+  const requiredFiles = [...manifest.baseFiles, ...(pageNeedsCharts(spec) ? manifest.dashboardFiles : [])];
+  for (const name of requiredFiles) {
     const path = resolve(runtimeDir, name);
     if (!existsSync(path)) {
       failures.push(`missing ${name}`);

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "system": "boss-ledger",
   "source": "modules/boss-ledger/director-rules/02-template-application-rules.md",
-  "templateVersion": "rules-9c2390830cd2",
+  "templateVersion": "rules-3bc46f3709fe",
   "core": {
     "title": "固定运行边界",
     "ruleIds": [
@@ -21,12 +21,14 @@
       "BL-VIS-019",
       "BL-VIS-020",
       "BL-VIS-021",
+      "BL-VIS-023",
       "BL-INT-011",
       "BL-INT-012",
       "BL-INT-013",
       "BL-INT-014",
       "BL-INT-016",
-      "BL-INT-017"
+      "BL-INT-017",
+      "BL-INT-019"
     ]
   },
   "templates": [
@@ -37,18 +39,24 @@
       "selection": "需要按条件查找、比较或处理一组记录，且不需要页面级统计汇总。",
       "ruleIds": [
         "BL-VIS-012",
+        "BL-VIS-023",
+        "BL-VIS-024",
         "BL-TPL-001",
         "BL-TPL-010",
         "BL-TPL-012",
         "BL-TPL-013",
         "BL-TPL-015",
         "BL-TPL-016",
+        "BL-TPL-022",
+        "BL-TPL-023",
         "BL-INT-001",
         "BL-INT-002",
         "BL-INT-003",
         "BL-INT-004",
         "BL-INT-008",
-        "BL-INT-010"
+        "BL-INT-010",
+        "BL-INT-018",
+        "BL-INT-019"
       ]
     },
     {
@@ -58,12 +66,18 @@
       "selection": "查询结果只需 1 至 2 个轻量指标，并且这些指标应服务于结果工具栏扫描。",
       "ruleIds": [
         "BL-VIS-012",
+        "BL-VIS-023",
+        "BL-VIS-024",
         "BL-TPL-001",
         "BL-TPL-010",
         "BL-TPL-011",
+        "BL-TPL-022",
+        "BL-TPL-023",
         "BL-INT-001",
         "BL-INT-003",
-        "BL-INT-008"
+        "BL-INT-008",
+        "BL-INT-018",
+        "BL-INT-019"
       ]
     },
     {
@@ -74,12 +88,18 @@
       "ruleIds": [
         "BL-VIS-009",
         "BL-VIS-012",
+        "BL-VIS-023",
+        "BL-VIS-024",
         "BL-TPL-001",
         "BL-TPL-010",
         "BL-TPL-011",
+        "BL-TPL-022",
+        "BL-TPL-023",
         "BL-INT-001",
         "BL-INT-003",
-        "BL-INT-008"
+        "BL-INT-008",
+        "BL-INT-018",
+        "BL-INT-019"
       ]
     },
     {

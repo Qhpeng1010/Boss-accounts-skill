@@ -1,7 +1,11 @@
 import { normalizeRecipeRequest } from './recipe-request-bridge.mjs';
 import { parseListRequirement } from './page-requirement-coverage.mjs';
 
-const RULE_REFS = ['BL-TPL-001', 'BL-TPL-012', 'BL-TPL-013', 'BL-INT-002', 'BL-INT-004', 'BL-INT-010'];
+const RULE_REFS = [
+  'BL-VIS-023', 'BL-VIS-024',
+  'BL-TPL-001', 'BL-TPL-012', 'BL-TPL-013', 'BL-TPL-022', 'BL-TPL-023',
+  'BL-INT-002', 'BL-INT-004', 'BL-INT-010', 'BL-INT-018', 'BL-INT-019'
+];
 const STATUS_OPTIONS = [
   { label: '生效中', value: 'active' },
   { label: '待生效', value: 'pending' },
@@ -100,6 +104,12 @@ function fieldKey(label, index = 0) {
   return `field${hash.toString(36) || index + 1}`;
 }
 
+function stripOperationClause(value) {
+  return String(value || '')
+    .replace(/(?:、|，|,)?操作\s*[（(][^）)]*[）)]/g, '')
+    .replace(/(?:、|，|,)?操作\s*$/g, '');
+}
+
 function controlFor(label) {
   if (/状态/.test(label)) return { control: 'select', options: STATUS_OPTIONS };
   if (/日期|时间/.test(label)) return { control: 'date' };
@@ -160,6 +170,21 @@ function extractFormLabels(request, action) {
   return match ? fieldsFrom(match[1]) : [];
 }
 
+function canonicalOperation(label) {
+  const value = normalize(label).replace(/\s+/g, '');
+  if (/^(?:查看|查看详情|详情|明细|查看信息)$/.test(value)) return '查看';
+  if (/^(?:编辑|编辑信息|修改|修改信息)$/.test(value)) return '编辑';
+  if (/^(?:删除|移除)$/.test(value)) return '删除';
+  if (/^(?:导出|下载)$/.test(value)) return '导出';
+  if (/^(?:刷新|重新加载)$/.test(value)) return '刷新';
+  return value;
+}
+
+function actionKey(label, index) {
+  const hash = [...String(label)].reduce((value, character) => ((value * 31) + character.codePointAt(0)) >>> 0, 13);
+  return `action${hash.toString(36) || index + 1}`;
+}
+
 export function parseListWorkbenchRequest(rawRequest) {
   const sourceRequest = normalize(rawRequest);
   const request = normalizeRecipeRequest(sourceRequest);
@@ -181,17 +206,22 @@ export function parseListWorkbenchRequest(rawRequest) {
     || request.match(/(?:查询|筛选)字段(?:包括|为|有|：|:)\s*([^。；]+)/);
   const columnMatch = request.match(/列表(?:展示|显示)([^。；]+)/);
   const queryLabels = fieldsFrom(querySection).length ? fieldsFrom(querySection) : (queryMatch ? fieldsFrom(queryMatch[1]) : []);
-  const columnLabels = fieldsFrom(columnSection).length ? fieldsFrom(columnSection) : (columnMatch ? fieldsFrom(columnMatch[1]) : []);
+  const cleanedColumnSection = stripOperationClause(columnSection);
+  const cleanedColumnMatch = columnMatch ? stripOperationClause(columnMatch[1]) : '';
+  const columnLabels = fieldsFrom(cleanedColumnSection).length ? fieldsFrom(cleanedColumnSection) : fieldsFrom(cleanedColumnMatch);
   if (!queryLabels.length || !columnLabels.length) throw new Error('列表配方需要明确的查询条件和列表字段。');
   const summary = parseListSummary(request);
 
-  const hasDetail = requirement.operations.includes('查看');
+  const operationLabels = requirement.operations;
+  const hasDetail = operationLabels.some((label) => canonicalOperation(label) === '查看');
   const hasCreate = /新增/.test(request);
-  const hasEdit = requirement.operations.includes('编辑');
-  const hasDelete = requirement.operations.includes('删除');
-  const hasExport = requirement.operations.includes('导出') || /导出/.test(request);
-  const hasRefresh = requirement.operations.includes('刷新') || /刷新/.test(request);
-  const customOperations = requirement.operations.filter((label) => !['查看', '编辑', '删除', '导出', '刷新'].includes(label));
+  const hasEdit = operationLabels.some((label) => canonicalOperation(label) === '编辑');
+  const hasDelete = operationLabels.some((label) => canonicalOperation(label) === '删除');
+  const hasExport = operationLabels.some((label) => canonicalOperation(label) === '导出') || /导出/.test(request);
+  const hasRefresh = operationLabels.some((label) => canonicalOperation(label) === '刷新') || /刷新/.test(request);
+  const customOperations = operationLabels.filter((label) => !['查看', '编辑', '删除', '导出', '刷新'].includes(canonicalOperation(label)));
+  const detailLabel = operationLabels.find((label) => canonicalOperation(label) === '查看') || '查看';
+  const editLabel = operationLabels.find((label) => canonicalOperation(label) === '编辑') || '编辑';
   if (!hasDetail && !hasCreate && !hasEdit && !hasDelete) {
     const operations = hasExport || hasRefresh ? { export: hasExport, refresh: hasRefresh } : {};
     if (customOperations.length) operations.custom = customOperations;
@@ -219,7 +249,9 @@ export function parseListWorkbenchRequest(rawRequest) {
       delete: hasDelete,
       export: hasExport,
       refresh: hasRefresh,
-      custom: customOperations
+      custom: customOperations,
+      detailLabel,
+      editLabel
     },
     columns,
     formLabels,
@@ -272,7 +304,7 @@ export function compileListWorkbench({ rawRequest, changeId }) {
   const columns = parsed.columns || parsed.columnLabels.map((label, index) => columnFor(label, index));
   const rowKey = columns.find((column) => /编号/.test(column.label))?.key || columns[0].key;
   const rows = [0, 1].map((rowIndex) => Object.fromEntries(columns.map((column) => [column.key, sampleValue(column, rowIndex)])));
-  const capabilities = [isAdvancedQuery ? 'query.advanced' : 'query.basic', 'table.flat', 'table.pagination', 'table.columnSettings'];
+  const capabilities = [isAdvancedQuery ? 'query.advanced' : 'query.basic', 'table.flat', 'table.pagination', 'table.columnSettings', 'table.columnOrder'];
   if (parsed.summary?.kind === 'inline') capabilities.push('summary.inline');
   if (parsed.summary?.kind === 'cards') capabilities.push('statistics.cards');
   if (columns.some((column) => column.format === 'status')) capabilities.push('table.status');
@@ -284,19 +316,28 @@ export function compileListWorkbench({ rawRequest, changeId }) {
   if (parsed.operations.export) capabilities.push('table.export');
   if (parsed.operations.refresh) capabilities.push('table.refresh');
 
-  const table = { rowKey, sectionTitle: `${parsed.pageName}列表`, tools: ['settings'], columns, rows, pagination: { page: 1, pageSize: 20, total: rows.length } };
+  const table = {
+    rowKey,
+    sectionTitle: `${parsed.pageName}列表`,
+    tools: ['settings'],
+    columnSettings: { allowOrder: true },
+    columns,
+    rows,
+    pagination: { page: 1, pageSize: 20, total: rows.length }
+  };
   if (parsed.operations.refresh) table.tools.unshift('refresh');
   if (parsed.operations.export) table.secondaryActions = [{ key: 'export', label: '导出', type: 'export' }];
   if (parsed.operations.create) {
     table.primaryAction = { key: 'create', label: '新增', createRecord: { [rowKey]: 'R003' }, form: formSpec(parsed, 'create') };
   }
   const actions = [];
-  if (parsed.operations.detail) actions.push({ key: 'detail', label: '查看', type: 'detail' });
-  if (parsed.operations.edit) actions.push({ key: 'edit', label: '编辑', type: 'edit', form: formSpec(parsed, 'edit') });
+  if (parsed.operations.detail) actions.push({ key: 'detail', label: parsed.operations.detailLabel || '查看', type: 'detail' });
+  if (parsed.operations.edit) actions.push({ key: 'edit', label: parsed.operations.editLabel || '编辑', type: 'edit', form: formSpec(parsed, 'edit') });
   if (parsed.operations.delete) actions.push({
     key: 'delete', label: '删除', type: 'delete', danger: true,
     confirm: { title: `确认删除${parsed.pageName}`, description: '确认删除当前记录吗？', impact: '删除后该记录将从当前列表移除。', reversible: false, successMessage: '记录已删除。' }
   });
+  (parsed.operations.custom || []).forEach((label, index) => actions.push({ key: actionKey(label, index), label }));
   if (actions.length) {
     table.columns = [...columns, { key: 'actions', label: '操作', width: 180, hideable: false }];
     table.rowActions = actions;

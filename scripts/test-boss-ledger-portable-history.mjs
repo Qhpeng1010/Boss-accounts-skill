@@ -25,7 +25,9 @@ function assertVendorMode(vendor, mode) {
 }
 
 try {
-  const generated = spawnSync(process.execPath, [resolve(root, 'scripts/generate-page.mjs'), '--request', request, '--recipe', 'auto'], {
+  // The unified entry should classify and select the recipe without a
+  // caller-side recipe flag. Keep this path representative of normal use.
+  const generated = spawnSync(process.execPath, [resolve(root, 'scripts/generate-page.mjs'), '--request', request], {
     cwd: root,
     encoding: 'utf8',
     timeout: 30_000

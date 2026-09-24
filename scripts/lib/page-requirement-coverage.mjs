@@ -17,8 +17,8 @@ function splitFields(value) {
   return String(value || '')
     .replace(/(开业时间)(?=门店状态)/g, '$1、')
     .replace(/[。；;]+$/g, '')
-    .split(/[、，,；;]|和/)
-    .map((field) => field.replace(/^(?:按|根据|填写|输入|修改|展示|显示|包括)/, '').trim())
+    .split(/[、，,；;]|和|[/／|]/)
+    .map((field) => field.replace(/^(?:按|根据|填写|输入|展示|显示|包括)/, '').trim())
     .filter((field) => field && !/^(?:保存|提交|关闭|确认|并|后)/.test(field))
     .filter((field) => {
       const value = field.replace(/\s+/g, '');

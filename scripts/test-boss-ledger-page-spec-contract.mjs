@@ -373,10 +373,13 @@ if (!runtimeSource.includes('function renderWorkflowResult')
 }
 
 if (!businessCssSource.includes('.boss-result-page { flex: 1 0 auto; min-height: 100%;')
-  || !shellCssSource.includes('.boss-shell { min-width: 1120px; height: 100vh; overflow: hidden;')
+  || !shellCssSource.includes('.boss-shell { width: 100%; min-width: 0; height: 100vh; overflow: hidden;')
+  || !shellCssSource.includes('.boss-shell-workspace { flex: 1; min-width: 0; min-height: 0;')
   || !shellCssSource.includes('.boss-shell-content { flex: 1; min-height: 0; overflow: auto;')
-  || !shellCssSource.includes('.boss-shell-content-body { flex: 1 0 auto; min-height: 0; overflow: visible;')
-  || !businessCssSource.includes('.boss-content-stack { flex: 1 1 auto;')) {
+  || !/\.boss-shell-content-body \{ flex: 1 [01] auto; min-height: 0; overflow: visible;/.test(shellCssSource)
+  || !businessCssSource.includes('.boss-content-stack { flex: 1 1 auto;')
+  || !businessCssSource.includes('min-height: 0;')
+  || !/\.boss-result-module\s*\{[^}]*flex:\s*1 [01] auto;/.test(businessCssSource)) {
   failures.push('result-full-content-area: success Result surfaces must fill the Shell content body and center their content in that available space.');
 } else {
   passed += 1;
@@ -453,9 +456,31 @@ if (!businessCssSource.includes('.boss-full-page-form { min-height: 100%; paddin
 
 if (!runtimeSource.includes('const tableMinimumWidth = columns.reduce')
   || !runtimeSource.includes('scroll: { x: tableSpec.scrollX || tableMinimumWidth }')
+  || !runtimeSource.includes("overlayClassName: 'boss-column-settings-popover'")
+  || runtimeSource.includes('overlayStyle:')
+  || !runtimeSource.includes("className: 'boss-column-settings-master'")
+  || !runtimeSource.includes("'列展示'")
+  || !runtimeSource.includes("onClick: resetColumnSettings")
+  || !runtimeSource.includes("'重置'")
+  || !runtimeSource.includes("'aria-label': '拖拽排序'")
+  || !runtimeSource.includes('const columnOrderingEnabled = tableSpec.columnSettings?.allowOrder !== false;')
+  || !runtimeSource.includes('boss-column-drag-fallback')
+  || !runtimeSource.includes('const optionalColumns = tableSpec.columns;')
+  || !runtimeSource.includes('const settingsColumns = columnOrder.map((key) => tableSpec.columns.find((column) => column.key === key)).filter(Boolean);')
+  || !runtimeSource.includes('const columns = orderedColumns.filter((column) => visibleKeys.includes(column.key)).map')
+  || runtimeSource.includes('disabled: column.hideable === false')
+  || runtimeSource.includes("width: column.width,\n        fixed: 'right',")
+  || runtimeSource.includes("tableSpec.columnSettings?.allowOrder && column.key !== 'actions'")
+  || runtimeSource.includes("column.key !== 'actions' && setDraggingKey")
+  || runtimeSource.includes("if (column.key !== 'actions') reorderColumn")
   || !businessCssSource.includes('.boss-result-module { width: 100%; min-width: 0; max-width: 100%;')
-  || !businessCssSource.includes('.boss-table-body { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }')
-  || !contentBaseCssSource.includes('.boss-table-body { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }')) {
+  || !runtimeSource.includes('HolderOutlined')
+  || !businessCssSource.includes('.boss-column-settings-popover .ant-popover-inner { width: 200px; max-width: calc(100vw - 24px); box-sizing: border-box; }')
+  || !businessCssSource.includes('.boss-column-settings { display: flex; width: 100%; max-width: 100%; max-height: min(360px, calc(100vh - 64px)); flex-direction: column; box-sizing: border-box; }')
+  || !businessCssSource.includes('.boss-column-setting-row .ant-checkbox-wrapper > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }')
+  || !businessCssSource.includes('.boss-column-drag-icon { font-size: 16px; }')
+  || !businessCssSource.includes('.boss-table-body { display: flex; flex: 0 0 auto; width: 100%; min-width: 0; max-width: 100%; min-height: max-content; overflow-x: auto; overflow-y: hidden; }')
+  || !contentBaseCssSource.includes('.boss-table-body { display: flex; flex: 0 0 auto; width: 100%; min-width: 0; max-width: 100%; min-height: max-content; overflow-x: auto; overflow-y: hidden; }')) {
   failures.push('contained-table-layout: result modules must constrain Table width and place any wide-table scroll inside the Table body.');
 } else {
   passed += 1;

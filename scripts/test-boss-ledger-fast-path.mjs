@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { resolveResources } from './resolve-resources.mjs';
+import { classifyBossLedgerGeneration } from './lib/boss-ledger-generation-entry.mjs';
 
 const root = process.cwd();
 const changesRoot = resolve(root, 'changes');
@@ -20,18 +21,17 @@ function run(args) {
 
 try {
   const skillSource = readFileSync(resolve(root, 'SKILL.md'), 'utf8');
-  const agentSource = readFileSync(resolve(root, 'AGENTS.md'), 'utf8');
   if (!skillSource.includes('不得出现 `form.*`、`list.*`、`detail.*`')) {
     throw new Error('The business-facing delivery contract must forbid implementation template IDs.');
   }
   if (!skillSource.includes('页面方案只决策一次')) {
     throw new Error('The Boss Ledger fast path must require a single page-solution decision.');
   }
-  if (!agentSource.includes('先读取 `SKILL.md`') || !agentSource.includes('只运行一次统一入口') || !agentSource.includes('不得再次路由')) {
-    throw new Error('Project instructions must use the unified single-route generation entry.');
+  if (!skillSource.includes('只运行一次') || !skillSource.includes('不得再次路由')) {
+    throw new Error('The Skill must use the unified single-route generation entry.');
   }
-  if (!agentSource.includes('通用技能或工具只能辅助执行已路由的方案')) {
-    throw new Error('Project instructions must prevent generic skills from changing the routed Boss Ledger solution.');
+  if (!skillSource.includes('通用技能和工具只能辅助执行已路由的方案')) {
+    throw new Error('The Skill must prevent generic skills from changing the routed Boss Ledger solution.');
   }
   const stagedRuleRequest = '做一个老板管账的页面。可以点击新增分账规则进行配置，分账规则页面分为3步，带交互，可上一步下一步最后提交。第一步：规则名称、规则类型、规则渠道、渠道下级、生效日期。第二步：分账方、手续费、预计到账金额、预计扣账金额。第三步：预览页面。落地页展示完成，可以继续新增，也可以返回列表查看。';
   const stagedRouted = resolveResources(stagedRuleRequest, 'generate');
@@ -62,6 +62,29 @@ try {
   }
   if (routed.resources.some((resource) => resource.startsWith('modules/shared/') && resource !== 'modules/shared/product.md')) {
     throw new Error('Boss Ledger generation must not load shared design, template, frontend, or quality rules.');
+  }
+
+  const semanticBridge = classifyBossLedgerGeneration('老板管账结算规则页面。检索条件：规则名称、规则状态。结果字段：规则编号、规则名称、规则状态。打开记录明细。');
+  if (semanticBridge.status !== 'fast' || semanticBridge.recipe !== 'list-workbench'
+      || !semanticBridge.inputRequest.includes('查询条件：规则名称、规则状态')
+      || !semanticBridge.inputRequest.includes('列表字段：规则编号、规则名称、规则状态')) {
+    throw new Error('Equivalent business wording did not enter the list workbench recipe.');
+  }
+  // Raw CLI input has no model-resolved fields. Neither positive wording nor
+  // negated wording may inject a predefined business profile.
+  for (const wording of ['其他信息自动补全', '信息帮我补充', '字段帮我补充', '不要自动补全', '其余按常见场景完善']) {
+    const incomplete = classifyBossLedgerGeneration(`创建钱包查询列表，可以查看详情，可以新增钱包信息。${wording}。`);
+    if (incomplete.status !== 'clarify' || !incomplete.question?.includes('查询条件')) {
+      throw new Error(`Unresolved input invented recipe fields for: ${wording}`);
+    }
+  }
+  const resolvedWorkflow = classifyBossLedgerGeneration('创建老板管账的分账规则查询列表。查询条件：规则名称、规则状态。列表字段：规则编号、规则名称、规则状态。支持新增，在新标签页打开分步骤配置。第一步：规则名称、商户编号。第二步：分账方、分账比例。第三步：预览确认。提交后显示成功页并返回列表。');
+  if (resolvedWorkflow.status !== 'fast' || resolvedWorkflow.recipe !== 'linked-list-wizard') {
+    throw new Error('Explicit list and staged requirements no longer select the linked workflow recipe.');
+  }
+  const conservative = classifyBossLedgerGeneration('创建一个查询列表，可以查看详情');
+  if (conservative.status !== 'clarify') {
+    throw new Error('Unspecified list requests must remain conservative and ask for fields.');
   }
   if (!routed.commands?.scaffold?.includes('scaffold-boss-ledger-page-spec.mjs') || JSON.stringify(routed).includes('legacy')) {
     throw new Error('A Page Spec request exposed a retired compatibility path.');

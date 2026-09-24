@@ -54,6 +54,7 @@
     CloseOutlined,
     ReloadOutlined,
     SettingOutlined,
+    HolderOutlined,
     UploadOutlined,
     UpOutlined
   } = icons;
@@ -70,23 +71,19 @@
     const pageKey = 'page-spec-current';
     const shell = spec.shell || {};
     const primaryKey = shell.activePrimaryKey || 'workspace';
-    const defaultPrimaryNav = [
-      { key: 'home', label: '首页', route: '/home' },
-      { key: 'merchant', label: '商户管理', route: '/merchant' },
-      { key: 'workspace', label: '业务管理', route: '/workspace' },
-      { key: 'system', label: '系统管理', route: '/system' }
-    ];
-    const primaryNav = Array.isArray(shell.primaryNav)
-      ? shell.primaryNav
-      : typeof shell.primaryNav === 'string' && shell.primaryNav.trim()
-        ? [{ key: primaryKey, label: shell.primaryNav.trim(), route: `/${primaryKey}` }]
-        : defaultPrimaryNav;
     const sideMenusByPrimary = shell.sideMenusByPrimary || {
       home: [{ key: 'home-group', label: '首页', icon: 'HomeOutlined', children: [{ key: 'dashboard', label: '经营概览', route: '/home/dashboard' }] }],
       merchant: [{ key: 'merchant-group', label: '商户管理', icon: 'TeamOutlined', children: [{ key: pageKey, label: pageName, route: `/merchant/${pageKey}`, closable: false }] }],
       workspace: [{ key: 'business-group', label: '业务管理', icon: 'AppstoreOutlined', children: [{ key: pageKey, label: pageName, route: `/workspace/${pageKey}`, closable: false }] }],
       system: [{ key: 'system-group', label: '系统管理', icon: 'SettingOutlined', children: [{ key: pageKey, label: pageName, route: `/system/${pageKey}`, closable: false }] }]
     };
+    const fallbackPrimaryLabel = sideMenusByPrimary[primaryKey]?.[0]?.label || primaryKey;
+    const defaultPrimaryNav = [{ key: primaryKey, label: fallbackPrimaryLabel, route: `/${primaryKey}` }];
+    const primaryNav = Array.isArray(shell.primaryNav) && shell.primaryNav.length
+      ? shell.primaryNav
+      : typeof shell.primaryNav === 'string' && shell.primaryNav.trim()
+        ? [{ key: primaryKey, label: shell.primaryNav.trim(), route: `/${primaryKey}` }]
+        : defaultPrimaryNav;
     const selectedMenuKey = shell.selectedMenuKey || shell.activeTabKey || pageKey;
     const rootTabKey = shell.activeTabKey || selectedMenuKey;
     const inferredOpenMenuKey = selectedMenuGroupKey(sideMenusByPrimary[primaryKey], selectedMenuKey);
@@ -505,7 +502,11 @@
     const [selectedKeys, setSelectedKeys] = React.useState([]);
     const [draggingKey, setDraggingKey] = React.useState(null);
     const initialColumnKeys = tableSpec.columns.map((column) => column.key);
-    const optionalColumns = tableSpec.columns.filter((column) => column.key !== 'actions' && column.hideable !== false);
+    // Older Page Specs omitted columnSettings while the fixed list toolbar
+    // already promised column ordering. Keep those generated pages usable;
+    // an explicit false remains an opt-out for legacy reviewed pages.
+    const columnOrderingEnabled = tableSpec.columnSettings?.allowOrder !== false;
+    const optionalColumns = tableSpec.columns;
     const [visibleKeys, setVisibleKeys] = React.useState(() => tableSpec.columns.filter((column) => column.hidden !== true).map((column) => column.key));
     const [columnOrder, setColumnOrder] = React.useState(initialColumnKeys);
 
@@ -654,16 +655,16 @@
     };
 
     const orderedColumns = columnOrder.map((key) => tableSpec.columns.find((column) => column.key === key)).filter(Boolean);
-    const columns = orderedColumns.filter((column) => visibleKeys.includes(column.key) || column.key === 'actions').map((column) => {
+    const columns = orderedColumns.filter((column) => visibleKeys.includes(column.key)).map((column) => {
       if (column.key !== 'actions') return dataColumns([column])[0];
       return {
         key: column.key,
         dataIndex: column.key,
         title: column.label,
         width: column.width,
-        fixed: 'right',
+        align: 'left',
         ellipsis: false,
-        render: (_, row) => h(Space, { size: 4 }, ...(tableSpec.rowActions || [])
+        render: (_, row) => h('div', { className: 'boss-operation-cell', 'data-boss-operation-column': true }, h(Space, { size: 4 }, ...(tableSpec.rowActions || [])
           .filter((action) => !action.visibleWhen || row[action.visibleWhen.field] === action.visibleWhen.equals)
           .map((action) => h(Button, {
             key: action.key,
@@ -684,24 +685,39 @@
               else if (action.confirm) confirmAction(action, [row], () => message.success(`${action.label}成功`));
               else message.success(`${action.label}：${row[tableSpec.rowKey]}`);
             }
-          }, action.label)))
+          }, action.label))))
       };
     });
 
+    const defaultVisibleKeys = tableSpec.columns.filter((column) => column.hidden !== true).map((column) => column.key);
+    const resetColumnSettings = () => { setVisibleKeys(defaultVisibleKeys); setColumnOrder(initialColumnKeys); };
+    const visibleOptionalCount = optionalColumns.filter((column) => visibleKeys.includes(column.key)).length;
+    const toggleAllColumns = (event) => {
+      setVisibleKeys(event.target.checked ? optionalColumns.map((column) => column.key) : []);
+    };
+    const settingsColumns = columnOrder.map((key) => tableSpec.columns.find((column) => column.key === key)).filter(Boolean);
     const settingsContent = h('div', { className: 'boss-column-settings' },
       h('div', { className: 'boss-column-settings-header' },
-        h('strong', null, '列设置'),
-        h(Button, { type: 'link', size: 'small', onClick: () => { setVisibleKeys(tableSpec.columns.filter((column) => column.hidden !== true).map((column) => column.key)); setColumnOrder(initialColumnKeys); } }, '恢复默认')),
-      h('div', { className: 'boss-column-settings-list' }, ...optionalColumns.map((column) => h('div', {
+        h(Checkbox, {
+          className: 'boss-column-settings-master',
+          checked: optionalColumns.length > 0 && visibleOptionalCount === optionalColumns.length,
+          indeterminate: visibleOptionalCount > 0 && visibleOptionalCount < optionalColumns.length,
+          onChange: toggleAllColumns
+        }, '列展示'),
+        h(Button, { type: 'link', size: 'small', onClick: resetColumnSettings }, '重置')),
+      h('div', { className: 'boss-column-settings-list' }, ...settingsColumns.map((column) => h('div', {
         key: column.key,
         className: 'boss-column-setting-row',
-        draggable: Boolean(tableSpec.columnSettings?.allowOrder),
+        draggable: columnOrderingEnabled,
         onDragStart: () => setDraggingKey(column.key),
         onDragOver: (event) => event.preventDefault(),
         onDrop: () => { reorderColumn(draggingKey, column.key); setDraggingKey(null); }
       },
-      tableSpec.columnSettings?.allowOrder ? h('span', { className: 'boss-column-drag-handle', 'aria-label': '拖拽排序' }, '::') : null,
-      h(Checkbox, { checked: visibleKeys.includes(column.key), onChange: (event) => setVisibleKeys((current) => event.target.checked ? [...new Set(current.concat(column.key))] : current.filter((key) => key !== column.key)) }, column.label)))));
+      columnOrderingEnabled ? h('span', { className: 'boss-column-drag-handle', 'aria-label': '拖拽排序', role: 'img' }, HolderOutlined ? h(HolderOutlined, { className: 'boss-column-drag-icon', 'aria-hidden': true }) : h('span', { className: 'boss-column-drag-fallback', 'aria-hidden': true }, '⋮⋮')) : h('span', { className: 'boss-column-drag-placeholder', 'aria-hidden': true }),
+      h(Checkbox, {
+        checked: visibleKeys.includes(column.key),
+        onChange: (event) => setVisibleKeys((current) => event.target.checked ? [...new Set(current.concat(column.key))] : current.filter((key) => key !== column.key))
+      }, column.label)))));
 
     const summary = list.summary?.items?.length ? h('div', { className: 'boss-result-summary-inline', 'data-boss-query-summary': 'inline' },
       h('span', { className: 'boss-result-summary-prefix' }, '查询统计：'),
@@ -737,7 +753,7 @@
     }, tableSpec.primaryAction.label));
     if ((tableSpec.tools || []).includes('refresh')) toolbarTools.push(h(Tooltip, { key: 'refresh', title: '刷新' }, h(Button, { icon: h(ReloadOutlined), 'aria-label': '刷新', onClick: () => runQuery(form.getFieldsValue()) })));
     // Column settings are a fixed list affordance, so it remains the final toolbar tool for every query list.
-    toolbarTools.push(h(Popover, { key: 'settings', title: null, content: settingsContent, trigger: 'click', placement: 'bottomRight' }, h(Tooltip, { title: '列设置' }, h(Button, { className: 'boss-column-setting-button', icon: h(SettingOutlined), 'aria-label': '列设置' }))));
+    toolbarTools.push(h(Popover, { key: 'settings', title: null, content: settingsContent, trigger: 'click', placement: 'bottomRight', autoAdjustOverflow: true, overlayClassName: 'boss-column-settings-popover' }, h(Tooltip, { title: '列设置' }, h(Button, { className: 'boss-column-setting-button', icon: h(SettingOutlined), 'aria-label': '列设置' }))));
     const batchBar = selectedKeys.length ? h('div', { className: 'boss-batch-toolbar' }, h('span', null, `已选择 ${selectedKeys.length} 项`), ...(tableSpec.batchActions || []).map((action) => h(Button, { key: action.key, danger: Boolean(action.danger), onClick: () => confirmAction(action, selectedKeys, () => { updateRows(selectedKeys, action.effect); setSelectedKeys([]); message.success(action.confirm?.successMessage || `${action.label}成功`); }) }, action.label))) : null;
     const emptyText = failed ? h(Result, { className: 'boss-error-state', status: 'error', title: spec.states?.error?.title || '数据加载失败', subTitle: spec.states?.error?.description || '请检查查询条件后重试。', extra: h(Button, { type: 'primary', onClick: () => runQuery(form.getFieldsValue()) }, '重新加载') }) : h(Empty, { description: spec.states?.empty?.description || '未查询到符合条件的数据' });
     const detailSpec = tableSpec.drawerDetail;
@@ -1074,12 +1090,12 @@
       closable: true
     });
     return h(React.Fragment, null,
-      h('div', { style: { display: activeTabKey === rootTabKey ? 'block' : 'none' } }, h(ListPage, {
+      h('div', { className: 'boss-linked-workflow-panel', style: { display: activeTabKey === rootTabKey ? 'flex' : 'none' } }, h(ListPage, {
         spec: sourceSpec,
         createdRecord,
         onStartWorkflow: openWorkflow
       })),
-      workflowOpen ? h('div', { style: { display: activeTabKey === workflowTabKey ? 'block' : 'none' } }, h(FormPage, {
+      workflowOpen ? h('div', { className: 'boss-linked-workflow-panel', style: { display: activeTabKey === workflowTabKey ? 'flex' : 'none' } }, h(FormPage, {
         spec,
         onReturnSource: (values) => {
           setCreatedRecord(sourceRecordFromValues(spec, values));

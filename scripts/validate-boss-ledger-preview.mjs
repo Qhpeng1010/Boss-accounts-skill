@@ -463,8 +463,9 @@ function checkSource(html) {
   } else {
     const isolatedWorkspaceScroll = /\.boss-shell\s*\{[^}]*(?<!-)height\s*:\s*100vh[^}]*overflow\s*:\s*hidden/i.test(source)
       && /\.boss-shell-body\s*\{[^}]*(?<!-)height\s*:\s*calc\(100vh\s*-\s*92px\)[^}]*overflow\s*:\s*hidden/i.test(source)
+      && /\.boss-shell-workspace\s*\{[^}]*min-height\s*:\s*0/i.test(source)
       && /\.boss-shell-content\s*\{[^}]*flex\s*:\s*1[^}]*overflow\s*:\s*auto/i.test(source)
-      && /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+0\s+auto[^}]*overflow\s*:\s*visible/i.test(source);
+      && /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+(?:0|1)\s+auto[^}]*overflow\s*:\s*visible/i.test(source);
     if (isolatedWorkspaceScroll) {
       pass('validate', 'Only the workspace content scrolls, and long business content pushes the Footer below it');
     } else {
@@ -485,8 +486,9 @@ function checkSource(html) {
     fail('validate', 'Empty business routes must use .boss-shell-empty as a full-height white module with centered content');
   }
 
-  const fullHeightResultRule = /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+0\s+auto[^}]*min-height\s*:\s*0/i.test(source)
-    && /\.boss-content-stack\s*\{[^}]*flex\s*:\s*1\s+1\s+auto[^}]*min-height\s*:\s*100%/i.test(source)
+  const fullHeightResultRule = /\.boss-shell-content-body\s*\{[^}]*flex\s*:\s*1\s+(?:0|1)\s+auto[^}]*min-height\s*:\s*0/i.test(source)
+    && /\.boss-content-stack\s*\{[^}]*flex\s*:\s*1\s+1\s+auto[^}]*min-height\s*:\s*(?:0|100%)/i.test(source)
+    && /\.boss-result-module\s*\{[^}]*flex\s*:\s*1\s+(?:0|1)\s+auto/i.test(source)
     && /\.boss-result-page\s*\{[^}]*flex\s*:\s*1\s+0\s+auto[^}]*min-height\s*:\s*100%[^}]*align-items\s*:\s*center[^}]*justify-content\s*:\s*center/i.test(source);
   if (fullHeightResultRule) {
     pass('validate', 'Success Result surfaces fill the Shell content area and center their content');

@@ -47,7 +47,13 @@ function contextQuestion(route) {
 function main() {
   const started = Date.now();
   const request = arg('--request');
-  const recipeMode = arg('--recipe') || 'off';
+  const requestedRecipeMode = arg('--recipe');
+  // Recipe selection is an intent decision, not a wording opt-in. The
+  // classifier proves whether the request matches a verified recipe and
+  // falls back to controlled natural generation when it does not. Keep
+  // --recipe off as an explicit escape hatch for diagnostics and callers
+  // that intentionally need the natural-generation contract.
+  const recipeMode = requestedRecipeMode || 'auto';
   if (args.includes('--json') && textOutput) throw new Error('--json and --text cannot be used together.');
   if (!request || !['off', 'auto'].includes(recipeMode)) {
     throw new Error('Usage: node scripts/generate-page.mjs --request "<business request>" [--recipe off|auto] [--text]');

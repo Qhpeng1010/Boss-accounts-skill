@@ -1,8 +1,9 @@
 /* Fixed business layout for declarative Boss Ledger Page Specs. */
 .boss-content-stack { flex: 1 1 auto; display: flex; flex-direction: column; gap: 16px; width: 100%; min-width: 0; max-width: 100%; min-height: 100%; }
+.boss-linked-workflow-panel { flex: 1 1 auto; min-width: 0; min-height: 0; flex-direction: column; }
 .boss-query-module, .boss-result-module, .boss-form-module, .boss-detail-module, .boss-result-page { background: var(--boss-container); }
 .boss-query-module { padding: 16px; }
-.boss-result-module { width: 100%; min-width: 0; max-width: 100%; padding: 0 16px 16px; min-height: 360px; overflow: hidden; }
+.boss-result-module { width: 100%; min-width: 0; max-width: 100%; display: flex; flex: 1 0 auto; flex-direction: column; min-height: 360px; padding: 0 16px 16px; overflow: visible; }
 .boss-form-module, .boss-detail-module { flex: 1 0 auto; min-height: 480px; padding: 16px; border-radius: var(--boss-card-radius); overflow: hidden; }
 .boss-result-page { flex: 1 0 auto; min-height: 100%; padding: 48px 16px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; border-radius: var(--boss-card-radius); overflow: hidden; }
 .boss-workflow-result { width: min(100%, 640px); padding: 0; }
@@ -36,7 +37,7 @@
 .boss-query-grid.is-measuring { visibility: visible; }
 .boss-query-field { min-width: 0; }
 .boss-query-field .ant-form-item { margin-bottom: 0; }
-.boss-query-field .ant-form-item-row { column-gap: 8px; flex-wrap: nowrap; }
+.boss-query-field .ant-form-item-row { column-gap: 0; flex-wrap: nowrap; }
 .boss-query-field .ant-form-item-label { flex: 0 0 auto; max-width: none; padding-inline-end: 0; text-align: right; }
 .boss-query-field .ant-form-item-label > label { width: auto; justify-content: flex-end; white-space: nowrap; }
 .boss-query-field .ant-form-item-control { flex: 1 1 auto; min-width: 0; }
@@ -62,14 +63,25 @@
 .boss-result-summary { padding-top: 16px; margin-bottom: 8px; display: grid; grid-template-columns: repeat(var(--boss-summary-columns, 3), minmax(0, 1fr)); gap: 12px; }
 .boss-statistic-card { background: var(--boss-statistic-bg); border-radius: var(--boss-radius-control); }
 .boss-statistic-card .ant-card-body { padding: 16px; }
-.boss-table-body { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.boss-table-body { display: flex; flex: 0 0 auto; width: 100%; min-width: 0; max-width: 100%; min-height: max-content; overflow-x: auto; overflow-y: hidden; }
 .boss-table-body > .ant-table-wrapper { width: 100%; min-width: 0; max-width: 100%; }
-.boss-table-pagination { padding-top: 16px; display: flex; justify-content: flex-end; }
-.boss-column-settings { width: 240px; }
-.boss-column-settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.boss-column-settings-list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow: auto; }
-.boss-column-setting-row { display: flex; align-items: center; min-height: 28px; }
-.boss-column-drag-handle { width: 20px; color: var(--boss-secondary); cursor: grab; font-family: monospace; }
+.boss-operation-cell { display: flex; align-items: center; justify-content: flex-start; min-width: 0; text-align: left; }
+.boss-table-pagination { flex: 0 0 auto; min-height: 64px; padding-top: 16px; display: flex; align-items: center; justify-content: flex-end; }
+.boss-column-settings-popover { max-width: calc(100vw - 24px); }
+.boss-column-settings-popover .ant-popover-inner { width: 200px; max-width: calc(100vw - 24px); box-sizing: border-box; }
+.boss-column-settings { display: flex; width: 100%; max-width: 100%; max-height: min(360px, calc(100vh - 64px)); flex-direction: column; box-sizing: border-box; }
+.boss-column-settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--boss-divider); }
+.boss-column-settings-header .ant-btn-link { padding-inline: 0; }
+.boss-column-settings-divider { margin: 8px 0 !important; }
+.boss-column-settings-list { display: flex; flex-direction: column; gap: 4px; max-height: min(300px, calc(100vh - 128px)); overflow: auto; padding-right: 2px; }
+.boss-column-setting-row { display: flex; align-items: center; gap: 8px; min-height: 28px; padding: 0; }
+.boss-column-setting-row .ant-checkbox-wrapper { flex: 1 1 auto; min-width: 0; }
+.boss-column-setting-row .ant-checkbox-wrapper > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boss-column-drag-handle { display: inline-flex; flex: 0 0 16px; width: 16px; height: 16px; align-items: center; justify-content: center; color: var(--boss-tertiary); cursor: grab; }
+.boss-column-drag-icon { font-size: 16px; }
+.boss-column-drag-fallback { font-size: 14px; line-height: 1; letter-spacing: -2px; }
+.boss-column-drag-handle:active { cursor: grabbing; }
+.boss-column-drag-placeholder { display: inline-flex; flex: 0 0 20px; width: 20px; height: 20px; }
 .boss-batch-toolbar { min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 8px 0; color: var(--boss-secondary); }
 .boss-child-table { margin: 0 16px 12px 48px; }
 .boss-form-section + .boss-form-section, .boss-detail-section + .boss-detail-section { margin-top: 24px; }
@@ -200,6 +212,9 @@
   .boss-dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 768px) {
+  .boss-linked-workflow-panel, .boss-content-stack { flex: 0 0 auto; min-height: auto; }
+  .boss-result-module { flex: 0 0 auto; min-height: 360px; overflow: visible; }
+  .boss-table-body { display: block; flex: 0 0 auto; min-height: max-content; overflow-x: auto; overflow-y: hidden; }
   .boss-form-grid, .boss-result-summary, .boss-detail-metrics, .wizard-body-grid, .wizard-field-grid, .boss-dashboard-scope-grid, .boss-dashboard-metrics, .boss-dashboard-charts { grid-template-columns: minmax(0, 1fr); }
   .boss-staged-grouped-step .boss-form-grid { grid-template-columns: minmax(0, 1fr); }
   .boss-query-grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; row-gap: 16px; }

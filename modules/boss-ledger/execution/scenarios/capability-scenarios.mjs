@@ -2,7 +2,7 @@ const ruleRefs = {
   form: ['BL-TPL-003', 'BL-TPL-005', 'BL-INT-005', 'BL-INT-006'],
   simplePageForm: ['BL-TPL-003', 'BL-TPL-005', 'BL-TPL-019', 'BL-INT-005', 'BL-INT-006', 'BL-INT-016'],
   wizard: ['BL-TPL-003', 'BL-TPL-007', 'BL-INT-005', 'BL-INT-006', 'BL-INT-007'],
-  list: ['BL-TPL-001', 'BL-TPL-010', 'BL-INT-003', 'BL-INT-008'],
+  list: ['BL-VIS-023', 'BL-VIS-024', 'BL-TPL-001', 'BL-TPL-010', 'BL-TPL-022', 'BL-TPL-023', 'BL-INT-003', 'BL-INT-008', 'BL-INT-018', 'BL-INT-019'],
   detail: ['BL-TPL-003', 'BL-TPL-009', 'BL-INT-004'],
   dashboard: ['BL-TPL-002', 'BL-TPL-020', 'BL-INT-001', 'BL-INT-015']
 };

@@ -42,9 +42,21 @@ function collectIconNames(directory, result = new Set()) {
   return result;
 }
 
+function collectIconNamesFromChangeSpecs(directory, result = new Set()) {
+  if (!existsSync(directory)) return result;
+  for (const name of readdirSync(directory)) {
+    const specPath = join(directory, name, 'page-spec.json');
+    if (!existsSync(specPath)) continue;
+    const source = readFileSync(specPath, 'utf8');
+    for (const match of source.matchAll(/\b[A-Z][A-Za-z0-9]+(?:Outlined|Filled|TwoTone)\b/g)) result.add(match[0]);
+  }
+  return result;
+}
+
 async function buildIcons() {
   const iconNames = [...new Set([
-    ...collectIconNames(resolve(root, 'modules/boss-ledger'))
+    ...collectIconNames(resolve(root, 'modules/boss-ledger')),
+    ...collectIconNamesFromChangeSpecs(resolve(root, 'changes'))
   ])].sort();
   if (!iconNames.length) throw new Error('No Ant Design icon references were found.');
   const imports = iconNames.map((name) => `import ${name} from '@ant-design/icons/es/icons/${name}.js';`).join('\n');

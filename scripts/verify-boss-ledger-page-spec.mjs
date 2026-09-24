@@ -3,7 +3,7 @@
 // rule-assertion: delivery.static-preflight
 // rule-assertion: delivery.human-review-record
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
@@ -44,6 +44,24 @@ function hash(file) {
   return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
+function markGenerationComplete(changeDir) {
+  const statePath = resolve(changeDir, 'generation-state.json');
+  if (!existsSync(statePath)) return;
+  const state = readJson(statePath);
+  const completedAt = new Date().toISOString();
+  const checkpoints = Array.isArray(state.checkpoints) ? [...state.checkpoints] : [];
+  if (!checkpoints.some((checkpoint) => checkpoint.name === 'static-preflight')) {
+    checkpoints.push({ name: 'static-preflight', status: 'pass', completedAt });
+  }
+  writeFileSync(statePath, `${JSON.stringify({
+    ...state,
+    status: 'generated',
+    checkpoints,
+    completedAt,
+    nextAction: '打开 preview.html 进行人工验收。'
+  }, null, 2)}\n`);
+}
+
 try {
   const root = process.cwd();
   const specPath = assertChangeSpecPath(root, specArg);
@@ -81,6 +99,7 @@ try {
     resolve(changeDir, 'preview.html'),
     ...(flexible ? ['--flexible'] : [])
   ]);
+  markGenerationComplete(changeDir);
   console.log(`page-spec-precheck: pass (${relative(root, specPath)})`);
   console.log('- static preflight: passed');
   console.log('- human acceptance: required through preview.html and review.md.');

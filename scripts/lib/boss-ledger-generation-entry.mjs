@@ -52,16 +52,16 @@ function clarifyWizard(route, error) {
   };
 }
 
-function ensureRecipeOperations(parsed) {
-  if (parsed.operations.custom?.length) {
-    throw new Error(`查询列表配方未登记自定义操作：${parsed.operations.custom.join('、')}。`);
-  }
+function requiresGroupedPageForm(request) {
+  return /(?:\d+\s*个模块|模块(?:信息|包含)|业务分组|分组(?:信息|表单)|基本信息[^。；]*法人信息[^。；]*(?:资质|经营))/.test(request);
 }
 
 /**
  * Classify a raw business request before an AI starts authoring a Page Spec.
- * Fast recipes must prove their own input shape; scenarios are never replayed
- * from a loose keyword match because that can silently discard business data.
+ * Fast recipes must prove their own input shape; row operations remain open
+ * ended and are preserved as generic actions when no specialized behavior is
+ * declared, so an unfamiliar label does not force a slow natural-generation
+ * fallback or silently discard the requested operation.
  */
 export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute = null } = {}) {
   const request = String(rawRequest || '').trim();
@@ -83,12 +83,12 @@ export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute 
     && /(?:第[一二三四五六七八九十\d]+步|分为\s*[一二三四五六七八九十\d]+步|上一步|下一步)/.test(request);
   if (linkedWorkflowSignal) {
     try {
-      const parsedList = parseListWorkbenchRequest(request);
-      ensureRecipeOperations(parsedList);
+      const recipeRequest = normalizeRecipeRequest(request);
+      const parsedList = parseListWorkbenchRequest(recipeRequest);
       const usesGroupedSteps = /(?:分组全页表单|每(?:个|一)步[^。；]*分组|每个填写步骤[^。；]*业务组|两个分组)/.test(request);
       const parsedWizard = usesGroupedSteps
-        ? parseStructuredGroupedWizardRequest(request)
-        : parseStructuredWizardRequest(request);
+        ? parseStructuredGroupedWizardRequest(recipeRequest)
+        : parseStructuredWizardRequest(recipeRequest);
       return {
         status: 'fast',
         decision: 'recipe-fast',
@@ -106,19 +106,28 @@ export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute 
           ]
         },
         reason: `${parsedList.pageName}同时包含查询列表和${usesGroupedSteps ? '分阶段分组' : '分阶段'}配置，命中已验证的完整业务流程配方。`,
-        inputRequest: bridged.changed ? normalizeRecipeRequest(request) : request,
-        channel: bridged.changed ? 'flexible' : 'fast'
+        inputRequest: recipeRequest,
+        channel: recipeRequest !== request ? 'flexible' : 'fast'
       };
     } catch (error) {
       return clarifyList(route, error);
     }
   }
-  const linkedPageFormSignal = /(?:查询\s*(?:列表|页面|的页面)|列表\s*(?:查询|页面)|从\s*列表|列表字段|查询条件)/.test(request)
-    && /(?:全页(?:表单|配置|新增)|独立(?:表单|页面)|新增(?:到|至|使用|打开)?(?:新)?标签页|新标签页(?:新增|表单)?|新增页|新\s*tab|打开\s*新\s*tab|成功(?:页|结果页))/i.test(request);
+  const listContractSignal = /(?:查询\s*(?:列表|页面|的页面)|列表\s*(?:查询|页面)|从\s*列表|列表字段|查询条件)/.test(request);
+  const explicitPageFormSignal = /(?:全页(?:表单|配置|新增)|独立(?:表单|页面)|新增(?:到|至|使用|打开)?(?:新)?标签页|新标签页(?:新增|表单)?|新增页|新\s*tab|打开\s*新\s*tab|成功(?:页|结果页))/i.test(request);
+  // “支持新增 + 填写字段 + 提交后返回列表” is the same verified
+  // list-to-page-form flow even when the request omits the words “新标签页”.
+  const implicitPageFormSignal = /支持(?:点击)?新增/.test(request)
+    && /(?:填写|输入)[^。；]+/.test(request)
+    && /提交[^。；]*(?:返回列表|返回来源列表)/.test(request);
+  const linkedPageFormSignal = listContractSignal && (explicitPageFormSignal || implicitPageFormSignal);
   if (linkedPageFormSignal) {
+    if (requiresGroupedPageForm(request)) {
+      return fallback(route, '需求声明了多个业务信息分组，当前全页表单快速配方不会压缩或改写分组结构，转入自然语言生成。');
+    }
     try {
-      const parsed = parseListWorkbenchRequest(request);
-      ensureRecipeOperations(parsed);
+      const recipeRequest = normalizeRecipeRequest(request);
+      const parsed = parseListWorkbenchRequest(recipeRequest);
       if (!parsed.operations.create) throw new Error('完整表单流程需要明确新增操作和新增字段。');
       return {
         status: 'fast',
@@ -137,8 +146,8 @@ export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute 
           ]
         },
         reason: `${parsed.pageName}从查询列表发起全页新增表单，命中已验证的完整业务流程配方。`,
-        inputRequest: bridged.changed ? normalizeRecipeRequest(request) : request,
-        channel: bridged.changed ? 'flexible' : 'fast'
+        inputRequest: recipeRequest,
+        channel: recipeRequest !== request ? 'flexible' : 'fast'
       };
     } catch (error) {
       return clarifyList(route, error);
@@ -157,7 +166,6 @@ export function classifyBossLedgerGeneration(rawRequest, { route: resolvedRoute 
     if (['query-list', 'inline-summary-list', 'card-summary-list'].includes(route.intent)) {
       try {
         const parsed = parseListWorkbenchRequest(request);
-        ensureRecipeOperations(parsed);
         return {
           status: 'fast',
           decision: 'recipe-fast',

@@ -6,7 +6,6 @@ import { resolve } from 'node:path';
 const root = process.cwd();
 const policy = JSON.parse(readFileSync(resolve(root, 'modules/boss-ledger/execution/generation-policy.json'), 'utf8'));
 const files = [
-  'AGENTS.md',
   'SKILL.md',
   'README.md',
   'agents/openai.yaml',
